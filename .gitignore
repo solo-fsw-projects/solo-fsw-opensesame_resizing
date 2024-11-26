@@ -1,0 +1,14 @@
+# The .gitignore file specifies files and directories that should not be included in version control.
+
+# For example: the following line excludes the entire .vscode folder from version control
+.vscode/
+
+# Compiled python modules.
+*.pyc
+
+# Setuptools distribution folder.
+/dist/
+
+# Python egg metadata, regenerated from source files by setuptools.
+/*.egg-info
+/*.egg
