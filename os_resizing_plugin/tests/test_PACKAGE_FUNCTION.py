@@ -1,9 +1,9 @@
 from unittest import TestCase
-import PACKAGE_NAME
+import os_resizing_plugin
 
 class CLASSNAME(TestCase):
 
     def TESTNAME(self):
 
-        s = PACKAGE_NAME.FUNCTION_NAME()
+        s = os_resizing_plugin.FUNCTION_NAME()
         self.assertTrue(isinstance(s, None))
