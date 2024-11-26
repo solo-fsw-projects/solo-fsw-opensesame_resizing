@@ -1,2 +1,2 @@
-def FUNCTION_NAME():
-    pass
+def supports(exp):
+    return exp.var.canvas_backend == 'osweb'

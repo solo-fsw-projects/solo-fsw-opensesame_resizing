@@ -1,1 +1,1 @@
-# This is just the init file required by OpenSesame 
+# The init file required by opensesame
