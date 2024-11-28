@@ -1,0 +1,17 @@
+{
+  "name": "os_resizing",
+  "version": "1.0.0",
+  "description": "A package to resize the OSWeb interface to get equal visual angle across different monitors and viewing distances",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@jspsych/plugin-html-keyboard-response": "^2.0.0",
+    "@jspsych/plugin-virtual-chinrest": "^3.0.0",
+    "jspsych": "^8.1.0",
+    "typescript": "^5.7.2"
+  }
+}

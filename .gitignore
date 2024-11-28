@@ -13,3 +13,6 @@ opensesame-extension-osweb/
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info
 /*.egg
+
+node_modules/
+os_resizing_plugin/virtual_chinrest.ts
