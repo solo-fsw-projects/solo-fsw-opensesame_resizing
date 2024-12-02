@@ -1,0 +1,81 @@
+---
+API: 3
+OpenSesame: 4.0.5
+Platform: nt
+---
+set width 1024
+set title "New experiment"
+set subject_parity even
+set subject_nr 0
+set start experiment
+set sound_sample_size -16
+set sound_freq 48000
+set sound_channels 2
+set sound_buf_size 1024
+set round_decimals 2
+set jatos_uuid "45e1eda8-5a4f-fe26-ab37-755c27c80e80"
+set height 768
+set fullscreen no
+set form_clicks no
+set foreground white
+set font_underline no
+set font_size 18
+set font_italic no
+set font_family mono
+set font_bold no
+set experiment_path None
+set disable_garbage_collection yes
+set description "The main experiment item"
+set canvas_backend osweb
+set background "#3d3846"
+
+define sequence experiment
+	set flush_keyboard yes
+	set description "Runs a number of items in sequence"
+	run getting_started True
+	run new_inline_javascript True
+	run welcome True
+	run new_1_inline_javascript True
+	run new_sketchpad True
+
+define notepad getting_started
+	__note__
+	Welcome to OpenSesame 4.0 "Melodramatic Milgram"!
+	If you are new to OpenSesame, it is a good idea to follow one of the tutorials,
+	which can be found on the documentation site:
+	- <http://osdoc.cogsci.nl/>
+	You can also check out the examples. These can be opened via:
+	- Menu -> Tools -> Example experiments.
+	And feel free to ask for help on the forum:
+	- <http://forum.cogsci.nl/>
+	Have fun with OpenSesame!
+	__end__
+	set description "A simple notepad to document your experiment. This plug-in does nothing."
+
+define inline_javascript new_1_inline_javascript
+	set description "Executes Python code"
+	set _run "var test = new Resizer();"
+	set _prepare ""
+
+define inline_javascript new_inline_javascript
+	set description "Executes Python code"
+	set _run ""
+	___prepare__
+	var script = document.createElement('script');
+	script.src = "http://127.0.0.1:5500/os_resizing_plugin/os_resizing.js";
+	document.head.appendChild(script);
+	__end__
+
+define sketchpad new_sketchpad
+	set duration keypress
+	set description "Displays stimuli"
+	draw rect color=white fill=1 h=64 penwidth=1 show_if=True w=64 x=-32 y=-320 z_index=0
+	draw rect color=white fill=1 h="{30/test.px2mm}" penwidth=1 show_if=True w="{30/test.px2mm)" x=-32 y=-32 z_index=0
+
+define sketchpad welcome
+	set start_response_interval no
+	set reset_variables no
+	set duration keypress
+	set description "Displays stimuli"
+	draw textline center=1 color=white font_bold=no font_family=serif font_italic=no font_size=32 html=yes show_if=True text="OpenSesame 4.0 <i>Melodramatic Milgram</i>" x=0 y=0 z_index=0
+
