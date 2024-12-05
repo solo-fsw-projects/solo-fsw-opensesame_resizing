@@ -105,6 +105,11 @@ class Resizer {
         test.appendChild(resize_element);
     }
 
+    /**
+     * Creates a draggable element for resizing and appends it to the resize element.
+     * @param resize_element Resize element that will contain the drag element
+     * @param adjust_size The size of the drag element in pixels
+     */
     create_drag_element(resize_element: HTMLElement, adjust_size: number) {
         let drag_element = document.createElement('div');
         drag_element.id = 'drag_element';
@@ -118,6 +123,10 @@ class Resizer {
         resize_element.appendChild(drag_element);
     }
 
+    /**
+     * Creates a button to trigger the resize and appends it to the test div.
+     * @param test test div element that contains the resize element
+     */
     create_btn(test: HTMLElement) {
         let btn = document.createElement('button');
         btn.id = 'resize_btn';
@@ -127,6 +136,9 @@ class Resizer {
         test.appendChild(btn);
     }
 
+    /**
+     * Handles the resizing logic and updates the canvas size based on the resize element.
+     */
     resize_object() {
         let dragging = false;
         let resize_element = document.querySelector<HTMLElement>('#resize_element');
@@ -170,7 +182,7 @@ class Resizer {
 
         document.querySelector('#resize_btn')?.addEventListener('click', () => { // make sure this gets executed before the canvases are loaded. Maybe a different block in OS?
             if (resize_element) {
-                const element_width = resize_element.getBoundingClientRect().width;
+                let element_width = resize_element.getBoundingClientRect().width;
                 this.px2mm = this.init_width / element_width;
                 let canvas = document.getElementsByTagName('canvas')[0];
                 canvas.style.display = 'inline-block';
