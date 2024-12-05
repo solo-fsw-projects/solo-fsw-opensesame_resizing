@@ -18,3 +18,4 @@ node_modules/
 os_resizing_plugin/virtual_chinrest.ts
 env/
 .DS_Store
+os_resizing_plugin/test.css
