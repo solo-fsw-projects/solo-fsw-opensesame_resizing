@@ -26,9 +26,9 @@
  * @method resize_object - Handles the resizing logic and updates the canvas size based on the resize element.
  */
 class Resizer {
-    init_height: number = 53.98; // card height in mm
-    init_width: number = 85.6; // card width in mm
-    init_resize_element: number = 250; // resize element in px
+    init_height: number = 53.98;
+    init_width: number = 85.6;
+    init_resize_element: number = 250;
     aspect_ratio: number;
     px2mm: number;
 
@@ -62,8 +62,6 @@ class Resizer {
             test.style.right = '0';
             test.style.bottom = '0';
             test.style.margin = 'auto';
-            test.style.width = '100%';
-            test.style.height = '100%';
             test.style.justifyContent = 'center';
             test.style.alignItems = 'center';
             test.style.zIndex = '11';
@@ -79,6 +77,8 @@ class Resizer {
         if (test) {
             test.style.maxWidth = canvas.clientWidth + 'px';
             test.style.maxHeight = canvas.clientHeight + 'px';
+            test.style.width = canvas.clientWidth + 'px';
+            test.style.height = canvas.clientHeight + 'px';
             canvas.style.display = 'none';
         }
     }
@@ -87,7 +87,7 @@ class Resizer {
      * Creates the resizing element and appends it to the test div.
      * @param test test div element that will contain the resize element
      */
-    create_resize_element(test: HTMLElement): void { // TODO: fix the positioning of the resize element
+    create_resize_element(test: HTMLElement): void {
         this.aspect_ratio = this.init_width / this.init_height;
         let resize_element = document.createElement('div');
         resize_element.id = 'resize_element';
@@ -142,22 +142,26 @@ class Resizer {
     resize_object() {
         let dragging = false;
         let resize_element = document.querySelector<HTMLElement>('#resize_element');
+        if (!resize_element) {
+            throw new Error('Resize element not found');
+        };
+
+        let original_height = parseInt(resize_element.style.height);
+        let original_width = parseInt(resize_element.style.width);
         let origin_x, origin_y;
-        let cx, cy;
+        // let cx, cy;
 
         document.addEventListener('mouseup', () => {
             dragging = false;
         })
 
         function mouse_down_event(e) {
+            e.preventDefault();
             dragging = true;
-            console.log('mouse down');
             origin_x = e.pageX;
             origin_y = e.pageY;
-            if (resize_element) {
-                cx = parseInt(resize_element.style.width);
-                cy = parseInt(resize_element.style.height);
-            }
+            // cx = parseInt(resize_element.style.width);
+            // cy = parseInt(resize_element.style.height);
         }
 
         document.querySelector('#drag_element')?.addEventListener('mousedown', mouse_down_event);
@@ -166,30 +170,26 @@ class Resizer {
             if (dragging) {
                 let dx = e.pageX - origin_x;
                 let dy = e.pageY - origin_y;
-                if (resize_element && Math.abs(dx) >= Math.abs(dy)) {
-                    let new_width = Math.round(Math.max(20, cx + dx*2));
-                    let new_height = Math.round(Math.max(20, cy + dy*2) / this.aspect_ratio);
+                    // let new_width = Math.round(Math.max(20, cx + dx*2));
+                    // let new_height = Math.round(Math.max(20, cy + dy*2) / this.aspect_ratio);
+                    // resize_element.style.width = new_width + 'px';
+                    // resize_element.style.height = new_height + 'px';
+                    // try resizing logic from https://medium.com/the-z/making-a-resizable-div-in-js-is-not-easy-as-you-think-bda19a1bc53d
+                    let new_width = original_width + dx;
+                    let new_height = original_height + dy;
                     resize_element.style.width = new_width + 'px';
-                    resize_element.style.height = new_height + 'px';
-                } else if (resize_element) {
-                    let new_width = Math.round(this.aspect_ratio * Math.max(20, cx + dx*2));
-                    let new_height = Math.round(Math.max(20, cy + dy*2));
-                    resize_element.style.width = new_width + 'px';
-                    resize_element.style.height = new_height + 'px';
-                }
+                    resize_element.style.height = Math.round(new_height / this.aspect_ratio) + 'px';
             }
         });
 
-        document.querySelector('#resize_btn')?.addEventListener('click', () => { // make sure this gets executed before the canvases are loaded. Maybe a different block in OS?
-            if (resize_element) {
-                let element_width = resize_element.getBoundingClientRect().width;
-                this.px2mm = this.init_width / element_width;
-                let canvas = document.getElementsByTagName('canvas')[0];
-                canvas.style.display = 'inline-block';
-                let test = document.getElementById('test');
-                if (!test) return;
-                test.style.display = 'none';
-            }
+        document.querySelector('#resize_btn')?.addEventListener('click', () => {
+            let element_width = resize_element.getBoundingClientRect().width;
+            this.px2mm = this.init_width / element_width;
+            let canvas = document.getElementsByTagName('canvas')[0];
+            canvas.style.display = 'inline-block';
+            let test = document.getElementById('test');
+            if (!test) return;
+            test.style.display = 'none';
         });
     }
 }

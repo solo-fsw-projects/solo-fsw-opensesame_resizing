@@ -27,9 +27,9 @@
  */
 var Resizer = /** @class */ (function () {
     function Resizer() {
-        this.init_height = 53.98; // card height in mm
-        this.init_width = 85.6; // card width in mm
-        this.init_resize_element = 250; // resize element in px
+        this.init_height = 53.98;
+        this.init_width = 85.6;
+        this.init_resize_element = 250;
         this.test_div();
         this.resize_object();
     }
@@ -56,8 +56,6 @@ var Resizer = /** @class */ (function () {
             test.style.right = '0';
             test.style.bottom = '0';
             test.style.margin = 'auto';
-            test.style.width = '100%';
-            test.style.height = '100%';
             test.style.justifyContent = 'center';
             test.style.alignItems = 'center';
             test.style.zIndex = '11';
@@ -72,6 +70,8 @@ var Resizer = /** @class */ (function () {
         if (test) {
             test.style.maxWidth = canvas.clientWidth + 'px';
             test.style.maxHeight = canvas.clientHeight + 'px';
+            test.style.width = canvas.clientWidth + 'px';
+            test.style.height = canvas.clientHeight + 'px';
             canvas.style.display = 'none';
         }
     };
@@ -94,6 +94,11 @@ var Resizer = /** @class */ (function () {
         this.create_drag_element(resize_element, adjust_size);
         test.appendChild(resize_element);
     };
+    /**
+     * Creates a draggable element for resizing and appends it to the resize element.
+     * @param resize_element Resize element that will contain the drag element
+     * @param adjust_size The size of the drag element in pixels
+     */
     Resizer.prototype.create_drag_element = function (resize_element, adjust_size) {
         var drag_element = document.createElement('div');
         drag_element.id = 'drag_element';
@@ -106,6 +111,10 @@ var Resizer = /** @class */ (function () {
         drag_element.style.cursor = 'move';
         resize_element.appendChild(drag_element);
     };
+    /**
+     * Creates a button to trigger the resize and appends it to the test div.
+     * @param test test div element that contains the resize element
+     */
     Resizer.prototype.create_btn = function (test) {
         var btn = document.createElement('button');
         btn.id = 'resize_btn';
@@ -114,56 +123,58 @@ var Resizer = /** @class */ (function () {
         btn.style.bottom = '0';
         test.appendChild(btn);
     };
+    /**
+     * Handles the resizing logic and updates the canvas size based on the resize element.
+     */
     Resizer.prototype.resize_object = function () {
         var _this = this;
         var _a, _b;
         var dragging = false;
         var resize_element = document.querySelector('#resize_element');
+        if (!resize_element) {
+            throw new Error('Resize element not found');
+        }
+        ;
+        var original_height = parseInt(resize_element.style.height);
+        var original_width = parseInt(resize_element.style.width);
         var origin_x, origin_y;
-        var cx, cy;
+        // let cx, cy;
         document.addEventListener('mouseup', function () {
             dragging = false;
         });
         function mouse_down_event(e) {
+            e.preventDefault();
             dragging = true;
-            console.log('mouse down');
             origin_x = e.pageX;
             origin_y = e.pageY;
-            if (resize_element) {
-                cx = parseInt(resize_element.style.width);
-                cy = parseInt(resize_element.style.height);
-            }
+            // cx = parseInt(resize_element.style.width);
+            // cy = parseInt(resize_element.style.height);
         }
         (_a = document.querySelector('#drag_element')) === null || _a === void 0 ? void 0 : _a.addEventListener('mousedown', mouse_down_event);
         document.addEventListener('mousemove', function (e) {
             if (dragging) {
                 var dx = e.pageX - origin_x;
                 var dy = e.pageY - origin_y;
-                if (resize_element && Math.abs(dx) >= Math.abs(dy)) {
-                    var new_width = Math.round(Math.max(20, cx + dx * 2));
-                    var new_height = Math.round(Math.max(20, cy + dy * 2) / _this.aspect_ratio);
-                    resize_element.style.width = new_width + 'px';
-                    resize_element.style.height = new_height + 'px';
-                }
-                else if (resize_element) {
-                    var new_width = Math.round(_this.aspect_ratio * Math.max(20, cx + dx * 2));
-                    var new_height = Math.round(Math.max(20, cy + dy * 2));
-                    resize_element.style.width = new_width + 'px';
-                    resize_element.style.height = new_height + 'px';
-                }
+                // let new_width = Math.round(Math.max(20, cx + dx*2));
+                // let new_height = Math.round(Math.max(20, cy + dy*2) / this.aspect_ratio);
+                // resize_element.style.width = new_width + 'px';
+                // resize_element.style.height = new_height + 'px';
+                // try resizing logic from https://medium.com/the-z/making-a-resizable-div-in-js-is-not-easy-as-you-think-bda19a1bc53d
+                var new_width = original_width + dx;
+                var new_height = original_height + dy;
+                resize_element.style.width = new_width + 'px';
+                resize_element.style.height = Math.round(new_height / _this.aspect_ratio) + 'px';
             }
         });
         (_b = document.querySelector('#resize_btn')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', function () {
-            if (resize_element) {
-                var element_width = resize_element.getBoundingClientRect().width;
-                _this.px2mm = _this.init_width / element_width;
-                var canvas = document.getElementsByTagName('canvas')[0];
-                canvas.style.display = 'inline-block';
-                var test = document.getElementById('test');
-                if (!test)
-                    return;
-                test.style.display = 'none';
-            }
+            var element_width = resize_element.getBoundingClientRect().width;
+            _this.px2mm = _this.init_width / element_width;
+            var canvas = document.getElementsByTagName('canvas')[0];
+            canvas.style.display = 'inline-block';
+            var test = document.getElementById('test');
+            if (!test)
+                return;
+            test.style.display = 'none';
         });
     };
     return Resizer;
