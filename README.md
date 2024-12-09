@@ -4,12 +4,12 @@ This repository contains the source code for the *os_resizing.js* script that re
 ## Importing
 This package is supposed to be imported into OpenSesame directly, through the **OSWeb & JATOS control panel**. Under external libraries add the following:
 ```
-INSERT LINK HERE
+(https://solo-fsw-projects.github.io/solo-fsw-opensesame_resizing/os_resizing_plugin/os_resizing.js)
 ```
 OR create a new '*inline_javascript*' block in the experiment block of your experiment. In the '*prepare*' tab, copy the following:
 ```
 var script = document.createElement('script');
-script.src = "INSERT LINK HERE";
+script.src = "https://solo-fsw-projects.github.io/solo-fsw-opensesame_resizing/os_resizing_plugin/os_resizing.js";
 document.head.appendChild(script);
 ```
 This will allow you to use the classes and functions in the *os_resizing.js* file directly in the inline javascript blocks in OpenSesame.
