@@ -26,9 +26,11 @@
  * @method resize_object - Handles the resizing logic and updates the canvas size based on the resize element.
  */
 class Resizer {
-    init_height: number = 53.98;
-    init_width: number = 85.6;
-    init_resize_element: number = 250;
+    private init_height: number = 53.98;
+    private init_width: number = 85.6;
+    private init_resize_element: number = 250;
+    private ball: HTMLElement;
+    private container: HTMLElement;
     aspect_ratio: number;
     px2mm: number;
 
@@ -177,12 +179,68 @@ class Resizer {
         document.querySelector('#resize_btn')?.addEventListener('click', () => {
             let element_width = resize_element.getBoundingClientRect().width;
             this.px2mm = this.init_width / element_width;
-            let canvas = document.getElementsByTagName('canvas')[0];
-            canvas.style.display = 'inline-block';
-            let test = document.getElementById('test');
-            if (!test) return;
-            test.style.display = 'none';
+            // let canvas = document.getElementsByTagName('canvas')[0];
+            // canvas.style.display = 'inline-block';
+            // let test = document.getElementById('test');
+            // if (!test) return;
+            // test.style.display = 'none';
         });
+    }
+
+    start_blindspot_task(reps: number) {
+        let div = document.querySelector<HTMLElement>('#test');
+        if (!div) {
+            throw new Error('Test div not found');
+        }
+        
+        let blindspot_content =  `
+            <div id="blind-spot">
+                <p>Now we will quickly measure how far away you are sitting.</p>
+                <div style="text-align: left">
+                    <ol>
+                        <li>Put your left hand on the <b>space bar</b>.</li>
+                        <li>Cover your right eye with your right hand.</li>
+                        <li>Using your left eye, focus on the black square. Keep your focus on the black square.</li>
+                        <li>The <span style="color: red; font-weight: bold;">red ball</span> will disappear as it moves from right to left. Press the space bar as soon as the ball disappears.</li>
+                    </ol>
+                </div>
+                <p>Press the space bar when you are ready to begin.</p>
+                <div id="svgDiv" style="height:100px; position:relative;"></div>
+                    <button class="btn btn-primary" id="proceed" style="display:none;"> +
+                       Yes +
+                    </button>
+                remaining measurements:
+                <div id="click" style="display:inline; color: red"> ${reps} </div>
+            </div>`;
+
+        div.innerHTML = blindspot_content;
+        let svg = document.querySelector<HTMLElement>('#svgDiv');
+        if (!svg) {
+            throw new Error('SVG element not found');
+        }
+
+        this.container = svg;
+        this.container.innerHTML = `
+        <div id="virtual-chinrest-circle" style="position: absolute; background-color: #f00; width: 30px; height: 30px; border-radius:30px;"></div>
+        <div id="virtual-chinrest-square" style="position: absolute; background-color: #000; width: 30px; height: 30px;"></div>`;
+
+        const ball_div = this.container.querySelector<HTMLElement>("#virtual-chinrest-circle");
+        if (!ball_div) {
+            throw new Error('Virtual chinrest circle not found');
+        }
+
+        const square = this.container.querySelector<HTMLElement>("#virtual-chinrest-square");
+        if (!square) {
+            throw new Error('Virtual chinrest square not found');
+        }
+
+        const rectX = this.container.getBoundingClientRect().width - 30;
+        const ballX = rectX * 0.85; // define where the ball is
+
+        ball_div.style.left = `${ballX}px`;
+        square.style.left = `${rectX}px`;
+
+        this.ball = ball_div;
     }
 }
 
