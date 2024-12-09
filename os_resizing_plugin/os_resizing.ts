@@ -149,7 +149,6 @@ class Resizer {
         let original_height = parseInt(resize_element.style.height);
         let original_width = parseInt(resize_element.style.width);
         let origin_x, origin_y;
-        // let cx, cy;
 
         document.addEventListener('mouseup', () => {
             dragging = false;
@@ -160,8 +159,6 @@ class Resizer {
             dragging = true;
             origin_x = e.pageX;
             origin_y = e.pageY;
-            // cx = parseInt(resize_element.style.width);
-            // cy = parseInt(resize_element.style.height);
         }
 
         document.querySelector('#drag_element')?.addEventListener('mousedown', mouse_down_event);
@@ -170,15 +167,10 @@ class Resizer {
             if (dragging) {
                 let dx = e.pageX - origin_x;
                 let dy = e.pageY - origin_y;
-                    // let new_width = Math.round(Math.max(20, cx + dx*2));
-                    // let new_height = Math.round(Math.max(20, cy + dy*2) / this.aspect_ratio);
-                    // resize_element.style.width = new_width + 'px';
-                    // resize_element.style.height = new_height + 'px';
-                    // try resizing logic from https://medium.com/the-z/making-a-resizable-div-in-js-is-not-easy-as-you-think-bda19a1bc53d
-                    let new_width = original_width + dx;
-                    let new_height = original_height + dy;
-                    resize_element.style.width = new_width + 'px';
-                    resize_element.style.height = Math.round(new_height / this.aspect_ratio) + 'px';
+                let new_width = original_width + dx;
+                let new_height = original_height + dy;
+                resize_element.style.width = new_width + 'px';
+                resize_element.style.height = Math.round(new_height / this.aspect_ratio) + 'px';
             }
         });
 
