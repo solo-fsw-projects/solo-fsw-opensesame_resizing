@@ -11,6 +11,7 @@
   "dependencies": {
     "@jspsych/plugin-html-keyboard-response": "^2.0.0",
     "@jspsych/plugin-virtual-chinrest": "^3.0.0",
+    "@types/node": "^22.10.2",
     "jspsych": "^8.1.0",
     "typescript": "^5.7.2"
   }

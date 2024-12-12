@@ -1,3 +1,5 @@
+import { getAllJSDocTagsOfKind } from "typescript";
+
 /**
  * The `Resizer` class provides functionality to create a resizable element on a canvas.
  * It initializes with default dimensions for a card and a resize element, and maintains
@@ -31,11 +33,21 @@ class Resizer {
     private init_resize_element: number = 250;
     private ball: HTMLElement;
     private container: HTMLElement;
+    private ball_animation_frame_id: number;
+    private _complete_function_cache: any;
+    reps_remaining: number = 5;
+    blindspot_data = {
+        ball_pos: [] as number[],
+        avg_ball_pos: 0,
+        square_pos: 0,
+    };
     aspect_ratio: number;
     px2mm: number;
+    runner: any;
 
 
-    constructor() {
+    constructor(runner: any) {
+        this.runner = runner;
         this.test_div();
         this.resize_object();
     }
@@ -142,6 +154,8 @@ class Resizer {
      * Handles the resizing logic and updates the canvas size based on the resize element.
      */
     resize_object() {
+        this._complete_function_cache = this.runner._events._currentItem._complete; // cache the complete function
+        this.runner._events._currentItem._complete = () => {}; // override the complete function
         let dragging = false;
         let resize_element = document.querySelector<HTMLElement>('#resize_element');
         if (!resize_element) {
@@ -179,15 +193,11 @@ class Resizer {
         document.querySelector('#resize_btn')?.addEventListener('click', () => {
             let element_width = resize_element.getBoundingClientRect().width;
             this.px2mm = this.init_width / element_width;
-            // let canvas = document.getElementsByTagName('canvas')[0];
-            // canvas.style.display = 'inline-block';
-            // let test = document.getElementById('test');
-            // if (!test) return;
-            // test.style.display = 'none';
+            this.start_blindspot_task();
         });
     }
 
-    start_blindspot_task(reps: number) {
+    start_blindspot_task() {
         let div = document.querySelector<HTMLElement>('#test');
         if (!div) {
             throw new Error('Test div not found');
@@ -210,7 +220,7 @@ class Resizer {
                        Yes +
                     </button>
                 remaining measurements:
-                <div id="click" style="display:inline; color: red"> ${reps} </div>
+                <div id="click" style="display:inline; color: red"> ${this.reps_remaining} </div>
             </div>`;
 
         div.innerHTML = blindspot_content;
@@ -224,6 +234,31 @@ class Resizer {
         <div id="virtual-chinrest-circle" style="position: absolute; background-color: #f00; width: 30px; height: 30px; border-radius:30px;"></div>
         <div id="virtual-chinrest-square" style="position: absolute; background-color: #000; width: 30px; height: 30px;"></div>`;
 
+        this.reset_ball_wait_for_start();
+    }
+
+    start_ball(){
+        this.container.addEventListener('keydown', (e) => {
+            if (e.key === ' ') {
+                this.record_position();
+            }
+        });
+        this.ball_animation_frame_id = requestAnimationFrame(this.animate_ball);
+    }
+
+    record_position() {
+        cancelAnimationFrame(this.ball_animation_frame_id);
+        const x = parseInt(this.ball.style.left);
+        this.blindspot_data.ball_pos.push(x);
+        this.reps_remaining--;
+        if (this.reps_remaining <= 0) {
+            console.log('pass');
+        } else {
+            this.reset_ball_wait_for_start();
+        }
+    }
+
+    reset_ball_wait_for_start() {
         const ball_div = this.container.querySelector<HTMLElement>("#virtual-chinrest-circle");
         if (!ball_div) {
             throw new Error('Virtual chinrest circle not found');
@@ -241,6 +276,19 @@ class Resizer {
         square.style.left = `${rectX}px`;
 
         this.ball = ball_div;
+
+        this.container.addEventListener('keydown', (e) => {
+            if (e.key === ' ') {
+                this.start_ball();
+            }
+        });
+    }
+
+    animate_ball() {
+        const dx = -2;
+        const x = parseInt(this.ball.style.left);
+        this.ball.style.left = `${x + dx}px`;
+        this.ball_animation_frame_id = requestAnimationFrame(this.animate_ball);
     }
 }
 

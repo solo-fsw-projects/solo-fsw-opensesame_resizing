@@ -1,3 +1,5 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * The `Resizer` class provides functionality to create a resizable element on a canvas.
  * It initializes with default dimensions for a card and a resize element, and maintains
@@ -26,10 +28,17 @@
  * @method resize_object - Handles the resizing logic and updates the canvas size based on the resize element.
  */
 var Resizer = /** @class */ (function () {
-    function Resizer() {
+    function Resizer(runner) {
         this.init_height = 53.98;
         this.init_width = 85.6;
         this.init_resize_element = 250;
+        this.reps_remaining = 5;
+        this.blindspot_data = {
+            ball_pos: [],
+            avg_ball_pos: 0,
+            square_pos: 0,
+        };
+        this.runner = runner;
         this.test_div();
         this.resize_object();
     }
@@ -129,6 +138,8 @@ var Resizer = /** @class */ (function () {
     Resizer.prototype.resize_object = function () {
         var _this = this;
         var _a, _b;
+        this._complete_function_cache = this.runner._events._currentItem._complete; // cache the complete function
+        this.runner._events._currentItem._complete = function () { }; // override the complete function
         var dragging = false;
         var resize_element = document.querySelector('#resize_element');
         if (!resize_element) {
@@ -138,7 +149,6 @@ var Resizer = /** @class */ (function () {
         var original_height = parseInt(resize_element.style.height);
         var original_width = parseInt(resize_element.style.width);
         var origin_x, origin_y;
-        // let cx, cy;
         document.addEventListener('mouseup', function () {
             dragging = false;
         });
@@ -147,19 +157,12 @@ var Resizer = /** @class */ (function () {
             dragging = true;
             origin_x = e.pageX;
             origin_y = e.pageY;
-            // cx = parseInt(resize_element.style.width);
-            // cy = parseInt(resize_element.style.height);
         }
         (_a = document.querySelector('#drag_element')) === null || _a === void 0 ? void 0 : _a.addEventListener('mousedown', mouse_down_event);
         document.addEventListener('mousemove', function (e) {
             if (dragging) {
                 var dx = e.pageX - origin_x;
                 var dy = e.pageY - origin_y;
-                // let new_width = Math.round(Math.max(20, cx + dx*2));
-                // let new_height = Math.round(Math.max(20, cy + dy*2) / this.aspect_ratio);
-                // resize_element.style.width = new_width + 'px';
-                // resize_element.style.height = new_height + 'px';
-                // try resizing logic from https://medium.com/the-z/making-a-resizable-div-in-js-is-not-easy-as-you-think-bda19a1bc53d
                 var new_width = original_width + dx;
                 var new_height = original_height + dy;
                 resize_element.style.width = new_width + 'px';
@@ -169,13 +172,71 @@ var Resizer = /** @class */ (function () {
         (_b = document.querySelector('#resize_btn')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', function () {
             var element_width = resize_element.getBoundingClientRect().width;
             _this.px2mm = _this.init_width / element_width;
-            var canvas = document.getElementsByTagName('canvas')[0];
-            canvas.style.display = 'inline-block';
-            var test = document.getElementById('test');
-            if (!test)
-                return;
-            test.style.display = 'none';
+            _this.start_blindspot_task();
         });
+    };
+    Resizer.prototype.start_blindspot_task = function () {
+        var div = document.querySelector('#test');
+        if (!div) {
+            throw new Error('Test div not found');
+        }
+        var blindspot_content = "\n            <div id=\"blind-spot\">\n                <p>Now we will quickly measure how far away you are sitting.</p>\n                <div style=\"text-align: left\">\n                    <ol>\n                        <li>Put your left hand on the <b>space bar</b>.</li>\n                        <li>Cover your right eye with your right hand.</li>\n                        <li>Using your left eye, focus on the black square. Keep your focus on the black square.</li>\n                        <li>The <span style=\"color: red; font-weight: bold;\">red ball</span> will disappear as it moves from right to left. Press the space bar as soon as the ball disappears.</li>\n                    </ol>\n                </div>\n                <p>Press the space bar when you are ready to begin.</p>\n                <div id=\"svgDiv\" style=\"height:100px; position:relative;\"></div>\n                    <button class=\"btn btn-primary\" id=\"proceed\" style=\"display:none;\"> +\n                       Yes +\n                    </button>\n                remaining measurements:\n                <div id=\"click\" style=\"display:inline; color: red\"> ".concat(this.reps_remaining, " </div>\n            </div>");
+        div.innerHTML = blindspot_content;
+        var svg = document.querySelector('#svgDiv');
+        if (!svg) {
+            throw new Error('SVG element not found');
+        }
+        this.container = svg;
+        this.container.innerHTML = "\n        <div id=\"virtual-chinrest-circle\" style=\"position: absolute; background-color: #f00; width: 30px; height: 30px; border-radius:30px;\"></div>\n        <div id=\"virtual-chinrest-square\" style=\"position: absolute; background-color: #000; width: 30px; height: 30px;\"></div>";
+        this.reset_ball_wait_for_start();
+    };
+    Resizer.prototype.start_ball = function () {
+        var _this = this;
+        this.container.addEventListener('keydown', function (e) {
+            if (e.key === ' ') {
+                _this.record_position();
+            }
+        });
+        this.ball_animation_frame_id = requestAnimationFrame(this.animate_ball);
+    };
+    Resizer.prototype.record_position = function () {
+        cancelAnimationFrame(this.ball_animation_frame_id);
+        var x = parseInt(this.ball.style.left);
+        this.blindspot_data.ball_pos.push(x);
+        this.reps_remaining--;
+        if (this.reps_remaining <= 0) {
+            console.log('pass');
+        }
+        else {
+            this.reset_ball_wait_for_start();
+        }
+    };
+    Resizer.prototype.reset_ball_wait_for_start = function () {
+        var _this = this;
+        var ball_div = this.container.querySelector("#virtual-chinrest-circle");
+        if (!ball_div) {
+            throw new Error('Virtual chinrest circle not found');
+        }
+        var square = this.container.querySelector("#virtual-chinrest-square");
+        if (!square) {
+            throw new Error('Virtual chinrest square not found');
+        }
+        var rectX = this.container.getBoundingClientRect().width - 30;
+        var ballX = rectX * 0.85; // define where the ball is
+        ball_div.style.left = "".concat(ballX, "px");
+        square.style.left = "".concat(rectX, "px");
+        this.ball = ball_div;
+        this.container.addEventListener('keydown', function (e) {
+            if (e.key === ' ') {
+                _this.start_ball();
+            }
+        });
+    };
+    Resizer.prototype.animate_ball = function () {
+        var dx = -2;
+        var x = parseInt(this.ball.style.left);
+        this.ball.style.left = "".concat(x + dx, "px");
+        this.ball_animation_frame_id = requestAnimationFrame(this.animate_ball);
     };
     return Resizer;
 }());
