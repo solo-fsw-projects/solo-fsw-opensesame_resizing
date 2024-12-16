@@ -1,5 +1,12 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 /**
  * The `Resizer` class provides functionality to create a resizable element on a canvas.
  * It initializes with default dimensions for a card and a resize element, and maintains
@@ -32,6 +39,8 @@ var Resizer = /** @class */ (function () {
         this.init_height = 53.98;
         this.init_width = 85.6;
         this.init_resize_element = 250;
+        this.listeners = [];
+        this.held_keys = new Set();
         this.reps_remaining = 5;
         this.blindspot_data = {
             ball_pos: [],
@@ -41,6 +50,7 @@ var Resizer = /** @class */ (function () {
         this.runner = runner;
         this.test_div();
         this.resize_object();
+        this.get_keyboard_response = this.get_keyboard_response.bind(this);
     }
     /**
      * Creates and styles a test div element, and appends it to the canvas parent.
@@ -186,33 +196,9 @@ var Resizer = /** @class */ (function () {
         if (!svg) {
             throw new Error('SVG element not found');
         }
+        this.add_root_event_listeners();
         this.container = svg;
         this.container.innerHTML = "\n        <div id=\"virtual-chinrest-circle\" style=\"position: absolute; background-color: #f00; width: 30px; height: 30px; border-radius:30px;\"></div>\n        <div id=\"virtual-chinrest-square\" style=\"position: absolute; background-color: #000; width: 30px; height: 30px;\"></div>";
-        this.reset_ball_wait_for_start();
-    };
-    Resizer.prototype.start_ball = function () {
-        var _this = this;
-        this.container.addEventListener('keydown', function (e) {
-            if (e.key === ' ') {
-                _this.record_position();
-            }
-        });
-        this.ball_animation_frame_id = requestAnimationFrame(this.animate_ball);
-    };
-    Resizer.prototype.record_position = function () {
-        cancelAnimationFrame(this.ball_animation_frame_id);
-        var x = parseInt(this.ball.style.left);
-        this.blindspot_data.ball_pos.push(x);
-        this.reps_remaining--;
-        if (this.reps_remaining <= 0) {
-            console.log('pass');
-        }
-        else {
-            this.reset_ball_wait_for_start();
-        }
-    };
-    Resizer.prototype.reset_ball_wait_for_start = function () {
-        var _this = this;
         var ball_div = this.container.querySelector("#virtual-chinrest-circle");
         if (!ball_div) {
             throw new Error('Virtual chinrest circle not found');
@@ -221,22 +207,110 @@ var Resizer = /** @class */ (function () {
         if (!square) {
             throw new Error('Virtual chinrest square not found');
         }
+        this.ball = ball_div;
+        this.blindspot_data["square_pos"] = this.getElementCenter(square).x, 2;
+        this.reset_ball_wait_for_start();
+    };
+    Resizer.prototype.get_keyboard_response = function (callback_function, valid_responses, persist, allow_held_keys, minimum_rt) {
+        var _this = this;
+        var start_time = performance.now();
+        var listener = function (e) {
+            if (_this.check_valid_response(valid_responses, allow_held_keys, e.key)) {
+                var rt = performance.now() - start_time;
+                if (rt < minimum_rt) {
+                    return;
+                }
+                if (!persist) {
+                    var index = _this.listeners.indexOf(listener);
+                    if (index > -1) {
+                        _this.listeners.splice(index, 1);
+                    }
+                }
+                console.log('response', e.key, rt);
+                console.log('function', callback_function);
+                callback_function({ key: e.key, rt: rt });
+            }
+        };
+        this.listeners.push(listener);
+    };
+    Resizer.prototype.start_ball = function () {
+        this.get_keyboard_response(this.record_position.bind(this), [' '], false, false, 0);
+        this.ball_animation_frame_id = requestAnimationFrame(this.animate_ball.bind(this));
+    };
+    Resizer.prototype.record_position = function () {
+        cancelAnimationFrame(this.ball_animation_frame_id);
+        var x = parseInt(this.ball.style.left);
+        this.blindspot_data.ball_pos.push(x);
+        this.reps_remaining--;
+        document.querySelector("#click").textContent = Math.max(this.reps_remaining, 0).toString();
+        if (this.reps_remaining <= 0) {
+            this.finalize_blindspot_task();
+        }
+        else {
+            this.reset_ball_wait_for_start();
+        }
+    };
+    Resizer.prototype.finalize_blindspot_task = function () {
+        var angle = 13.5;
+        var sum = this.blindspot_data.ball_pos.reduce(function (a, b) { return a + b; }, 0);
+        var avg = sum / this.blindspot_data.ball_pos.length;
+        this.blindspot_data.avg_ball_pos = avg;
+        var ball_square_distance = (this.blindspot_data.square_pos - avg) / this.px2mm;
+        this.view_distance = ball_square_distance / Math.tan(angle * Math.PI / 180);
+        this.runner._events._currentItem._complete = this._complete_function_cache;
+    };
+    Resizer.prototype.reset_ball_wait_for_start = function () {
         var rectX = this.container.getBoundingClientRect().width - 30;
         var ballX = rectX * 0.85; // define where the ball is
-        ball_div.style.left = "".concat(ballX, "px");
+        var square = this.container.querySelector("#virtual-chinrest-square");
+        if (!square) {
+            throw new Error('Virtual chinrest square not found');
+        }
+        this.ball.style.left = "".concat(ballX, "px");
         square.style.left = "".concat(rectX, "px");
-        this.ball = ball_div;
-        this.container.addEventListener('keydown', function (e) {
-            if (e.key === ' ') {
-                _this.start_ball();
-            }
-        });
+        this.blindspot_data.square_pos = rectX;
+        this.get_keyboard_response(this.start_ball.bind(this), [' '], false, false, 0);
     };
     Resizer.prototype.animate_ball = function () {
         var dx = -2;
         var x = parseInt(this.ball.style.left);
         this.ball.style.left = "".concat(x + dx, "px");
-        this.ball_animation_frame_id = requestAnimationFrame(this.animate_ball);
+        this.ball_animation_frame_id = requestAnimationFrame(this.animate_ball.bind(this));
+    };
+    Resizer.prototype.add_root_event_listeners = function () {
+        var _this = this;
+        document.body.addEventListener('keydown', function (e) {
+            for (var _i = 0, _a = __spreadArray([], _this.listeners, true); _i < _a.length; _i++) {
+                var listener = _a[_i];
+                try {
+                    listener(e);
+                }
+                catch (error) {
+                    console.error(error);
+                }
+            }
+            _this.held_keys.add(e.key);
+        });
+        document.body.addEventListener('keyup', function (e) {
+            _this.held_keys.delete(e.key);
+        });
+    };
+    Resizer.prototype.check_valid_response = function (valid_responses, allow_held_keys, key) {
+        if (allow_held_keys === void 0) { allow_held_keys = false; }
+        if (!allow_held_keys && this.held_keys.has(key)) {
+            return false;
+        }
+        if (valid_responses.includes(key)) {
+            return true;
+        }
+        return false;
+    };
+    Resizer.prototype.getElementCenter = function (el) {
+        var box = el.getBoundingClientRect();
+        return {
+            x: box.left + box.width / 2,
+            y: box.top + box.height / 2,
+        };
     };
     return Resizer;
 }());

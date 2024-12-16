@@ -55,7 +55,7 @@ define notepad getting_started
 
 define inline_javascript new_1_inline_javascript
 	set description "Executes Python code"
-	set _run "var test = new Resizer();"
+	set _run "var test = new Resizer(runner);"
 	set _prepare ""
 
 define sketchpad new_1_sketchpad
@@ -90,7 +90,8 @@ define inline_javascript new_inline_javascript
 	set _run ""
 	___prepare__
 	var script = document.createElement('script');
-	script.src = "https://solo-fsw-projects.github.io/solo-fsw-opensesame_resizing/os_resizing_plugin/os_resizing.js";
+	//script.src = "https://solo-fsw-projects.github.io/solo-fsw-opensesame_resizing/os_resizing_plugin/os_resizing.js";
+	script.src = "http://127.0.0.1:5500/os_resizing_plugin/os_resizing.js";
 	document.head.appendChild(script);
 	__end__
 

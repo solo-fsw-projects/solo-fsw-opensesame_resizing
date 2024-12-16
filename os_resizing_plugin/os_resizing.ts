@@ -1,5 +1,3 @@
-import { getAllJSDocTagsOfKind } from "typescript";
-
 /**
  * The `Resizer` class provides functionality to create a resizable element on a canvas.
  * It initializes with default dimensions for a card and a resize element, and maintains
@@ -34,6 +32,8 @@ class Resizer {
     private ball: HTMLElement;
     private container: HTMLElement;
     private ball_animation_frame_id: number;
+    private listeners: KeyboardListener[] = [];
+    private held_keys: Set<string> = new Set();
     private _complete_function_cache: any;
     reps_remaining: number = 5;
     blindspot_data = {
@@ -44,12 +44,14 @@ class Resizer {
     aspect_ratio: number;
     px2mm: number;
     runner: any;
+    view_distance: number;
 
 
     constructor(runner: any) {
         this.runner = runner;
         this.test_div();
         this.resize_object();
+        this.get_keyboard_response = this.get_keyboard_response.bind(this);
     }
 
     /**
@@ -229,36 +231,13 @@ class Resizer {
             throw new Error('SVG element not found');
         }
 
+        this.add_root_event_listeners();
+
         this.container = svg;
         this.container.innerHTML = `
         <div id="virtual-chinrest-circle" style="position: absolute; background-color: #f00; width: 30px; height: 30px; border-radius:30px;"></div>
         <div id="virtual-chinrest-square" style="position: absolute; background-color: #000; width: 30px; height: 30px;"></div>`;
-
-        this.reset_ball_wait_for_start();
-    }
-
-    start_ball(){
-        this.container.addEventListener('keydown', (e) => {
-            if (e.key === ' ') {
-                this.record_position();
-            }
-        });
-        this.ball_animation_frame_id = requestAnimationFrame(this.animate_ball);
-    }
-
-    record_position() {
-        cancelAnimationFrame(this.ball_animation_frame_id);
-        const x = parseInt(this.ball.style.left);
-        this.blindspot_data.ball_pos.push(x);
-        this.reps_remaining--;
-        if (this.reps_remaining <= 0) {
-            console.log('pass');
-        } else {
-            this.reset_ball_wait_for_start();
-        }
-    }
-
-    reset_ball_wait_for_start() {
+        
         const ball_div = this.container.querySelector<HTMLElement>("#virtual-chinrest-circle");
         if (!ball_div) {
             throw new Error('Virtual chinrest circle not found');
@@ -269,26 +248,150 @@ class Resizer {
             throw new Error('Virtual chinrest square not found');
         }
 
+        this.ball = ball_div;
+
+        this.blindspot_data["square_pos"] = this.getElementCenter(square).x, 2;
+        
+        this.reset_ball_wait_for_start();
+    }
+
+    get_keyboard_response(
+        callback_function: (response: { key: string, rt: number }) => void,
+        valid_responses: string[],
+        persist: boolean,
+        allow_held_keys: boolean,
+        minimum_rt: number
+    ): void {
+        const start_time = performance.now();
+        const listener = (e) => {
+            if (this.check_valid_response(valid_responses, allow_held_keys, e.key)) {
+                const rt = performance.now() - start_time;
+                if (rt < minimum_rt) {
+                    return;
+                }
+                if (!persist) {
+                    const index = this.listeners.indexOf(listener);
+                    if (index > -1) {
+                        this.listeners.splice(index, 1);
+                    }
+                }
+                console.log('response', e.key, rt);
+                console.log('function', callback_function);
+                callback_function({key: e.key, rt});
+            }
+        };
+        this.listeners.push(listener);
+    }
+
+    start_ball() {
+        this.get_keyboard_response(
+            this.record_position.bind(this),
+            [' '],
+            false,
+            false,
+            0
+        );
+
+        this.ball_animation_frame_id = requestAnimationFrame(this.animate_ball.bind(this));
+    }
+
+    record_position() {
+        cancelAnimationFrame(this.ball_animation_frame_id);
+        const x = parseInt(this.ball.style.left);
+        this.blindspot_data.ball_pos.push(x);
+        this.reps_remaining--;
+
+
+        (document.querySelector("#click") as HTMLDivElement).textContent = Math.max(
+            this.reps_remaining,
+            0).toString();
+
+        if (this.reps_remaining <= 0) {
+            this.finalize_blindspot_task();
+        } else {
+            this.reset_ball_wait_for_start();
+        }
+    }
+
+    finalize_blindspot_task() {
+        const angle = 13.5;
+        const sum = this.blindspot_data.ball_pos.reduce((a, b) => a + b, 0);
+        const avg = sum / this.blindspot_data.ball_pos.length;
+        this.blindspot_data.avg_ball_pos = avg;
+        const ball_square_distance = (this.blindspot_data.square_pos - avg) / this.px2mm;
+
+        this.view_distance = ball_square_distance / Math.tan(angle * Math.PI / 180);
+        
+        this.runner._events._currentItem._complete = this._complete_function_cache;
+    }
+
+    reset_ball_wait_for_start() {
         const rectX = this.container.getBoundingClientRect().width - 30;
         const ballX = rectX * 0.85; // define where the ball is
 
-        ball_div.style.left = `${ballX}px`;
+        const square = this.container.querySelector<HTMLElement>("#virtual-chinrest-square");
+        if (!square) {
+            throw new Error('Virtual chinrest square not found');
+        }
+
+        this.ball.style.left = `${ballX}px`;
         square.style.left = `${rectX}px`;
 
-        this.ball = ball_div;
+        this.blindspot_data.square_pos = rectX;
 
-        this.container.addEventListener('keydown', (e) => {
-            if (e.key === ' ') {
-                this.start_ball();
-            }
-        });
+        this.get_keyboard_response(
+            this.start_ball.bind(this),
+            [' '],
+            false,
+            false,
+            0
+        );
     }
 
     animate_ball() {
         const dx = -2;
         const x = parseInt(this.ball.style.left);
         this.ball.style.left = `${x + dx}px`;
-        this.ball_animation_frame_id = requestAnimationFrame(this.animate_ball);
+        this.ball_animation_frame_id = requestAnimationFrame(this.animate_ball.bind(this));
     }
+
+    add_root_event_listeners() {
+        document.body.addEventListener('keydown', (e) => {
+            for (const listener of [...this.listeners]) {
+                try {
+                    listener(e);
+                }
+                catch (error) {
+                    console.error(error);
+                }
+            }
+            this.held_keys.add(e.key);
+        });
+
+        document.body.addEventListener('keyup', (e) => {
+            this.held_keys.delete(e.key);
+        });
+    }
+
+    check_valid_response(valid_responses: string[], allow_held_keys: boolean = false, key: string) {
+        if (!allow_held_keys && this.held_keys.has(key)) {
+            return false;
+        }
+
+        if (valid_responses.includes(key)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    getElementCenter(el: HTMLElement) {
+        const box = el.getBoundingClientRect();
+        return {
+          x: box.left + box.width / 2,
+          y: box.top + box.height / 2,
+        };
+      }
 }
 
+type KeyboardListener = (e: KeyboardEvent) => void; 
