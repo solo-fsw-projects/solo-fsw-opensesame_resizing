@@ -13,7 +13,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
  * the aspect ratio during resizing.
  *
  * @remarks
- * The class creates a test div element, a resize element, and a button to trigger the resize.
+ * The class creates a content div element, a resize element, and a button to trigger the resize.
  * It also handles mouse events to allow dragging and resizing of the element.
  *
  * @example
@@ -27,11 +27,11 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
  * @property {number} aspect_ratio - The aspect ratio of the card (width/height).
  * @property {number} px2mm - The conversion factor from pixels to millimeters.
  *
- * @method test_div - Creates and styles a test div element, and appends it to the canvas parent.
- * @method force_canvas_size - Forces the test div element to match the canvas size.
- * @method create_resize_element - Creates a resizable element and appends it to the test div.
+ * @method test_div - Creates and styles a content div element, and appends it to the canvas parent.
+ * @method force_canvas_size - Forces the content div element to match the canvas size.
+ * @method create_resize_element - Creates a resizable element and appends it to the content div.
  * @method create_drag_element - Creates a draggable element for resizing and appends it to the resize element.
- * @method create_btn - Creates a button to trigger the resize and appends it to the test div.
+ * @method create_btn - Creates a button to trigger the resize and appends it to the content div.
  * @method resize_object - Handles the resizing logic and updates the canvas size based on the resize element.
  */
 var Resizer = /** @class */ (function () {
@@ -48,11 +48,15 @@ var Resizer = /** @class */ (function () {
             square_pos: 0,
         };
         this.runner = runner;
-        var content = this.create_content_wrapper();
-        this.test_div(content);
+        var content_wrapper = this.create_content_wrapper();
+        this.content_div(content_wrapper);
         this.resize_object();
         this.get_keyboard_response = this.get_keyboard_response.bind(this);
     }
+    /**
+     * Creates and styles a content wrapper div element, and appends it to the body.
+     * @returns {HTMLElement} The content wrapper div element.
+     */
     Resizer.prototype.create_content_wrapper = function () {
         var content_wrapper = document.createElement('div');
         content_wrapper.id = 'content-wrapper';
@@ -66,17 +70,14 @@ var Resizer = /** @class */ (function () {
         return content_wrapper;
     };
     /**
-     * Creates and styles a test div element, and appends it to the canvas parent.
+     * Creates and styles a content div element, and appends it to the canvas parent.
      * @returns {void}
      */
-    Resizer.prototype.test_div = function (content) {
-        var test = document.createElement('div');
-        test.id = 'test';
-        //set_div_style();
-        test.style.textAlign = 'center';
-        test.style.margin = 'auto';
-        var canvas = document.getElementsByTagName('canvas')[0];
-        this.force_canvas_size(test, canvas);
+    Resizer.prototype.content_div = function (content_wrapper) {
+        var content = document.createElement('div');
+        content.id = 'content';
+        content.style.textAlign = 'center';
+        content.style.margin = 'auto';
         document.body.getElementsByTagName('main')[0].style.display = 'none';
         var insert_name = document.createElement('div');
         insert_name.id = 'insert_name';
@@ -84,38 +85,12 @@ var Resizer = /** @class */ (function () {
         insert_name.style.margin = '0 auto';
         this.create_resize_element(insert_name);
         this.create_btn(insert_name);
-        test.appendChild(insert_name);
-        content.appendChild(test);
-        // var parent = canvas.parentElement;
-        // parent?.appendChild(test);
-        function set_div_style() {
-            test.style.display = 'inline-block';
-            test.style.position = 'relative';
-            test.style.top = '0';
-            test.style.left = '0';
-            test.style.right = '0';
-            test.style.bottom = '0';
-            test.style.margin = 'auto';
-            test.style.justifyContent = 'center';
-            test.style.alignItems = 'center';
-            test.style.zIndex = '11';
-        }
+        content.appendChild(insert_name);
+        content_wrapper.appendChild(content);
     };
     /**
-     * This function forces the test div element to match the canvas size.
-     * @param test div element that contains the resize element
-     * @param canvas the canvas element created by OSWeb that contains the correct dimensions
-     */
-    Resizer.prototype.force_canvas_size = function (test, canvas) {
-        //test.style.maxWidth = canvas.clientWidth + 'px';
-        //test.style.maxHeight = canvas.clientHeight + 'px';
-        //test.style.width = canvas.clientWidth + 'px';
-        //test.style.height = canvas.clientHeight + 'px';
-        canvas.style.display = 'none';
-    };
-    /**
-     * Creates the resizing element and appends it to the test div.
-     * @param test test div element that will contain the resize element
+     * Creates the resizing element and appends it to the content div.
+     * @param content content div element that will contain the resize element
      */
     Resizer.prototype.create_resize_element = function (insert_name) {
         var page_size = document.createElement('div');
@@ -158,8 +133,8 @@ var Resizer = /** @class */ (function () {
         resize_element.appendChild(drag_element);
     };
     /**
-     * Creates a button to trigger the resize and appends it to the test div.
-     * @param test test div element that contains the resize element
+     * Creates a button to trigger the resize and appends it to the content div.
+     * @param content content div element that contains the resize element
      */
     Resizer.prototype.create_btn = function (insert_name) {
         var btn = document.createElement('button');
@@ -175,6 +150,8 @@ var Resizer = /** @class */ (function () {
     };
     /**
      * Handles the resizing logic and updates the canvas size based on the resize element.
+     * @returns {void}
+     * @throws {Error} Resize element not found
      */
     Resizer.prototype.resize_object = function () {
         var _this = this;
@@ -216,6 +193,9 @@ var Resizer = /** @class */ (function () {
             _this.start_blindspot_task();
         });
     };
+    /**
+     * Starts the blindspot task.
+     */
     Resizer.prototype.start_blindspot_task = function () {
         var div = document.querySelector('#insert_name');
         if (!div) {
@@ -237,6 +217,14 @@ var Resizer = /** @class */ (function () {
         this.ball = ball_div;
         this.reset_ball_wait_for_start();
     };
+    /**
+     * Get a keyboard response.
+     * @param callback_function function to be triggered on response
+     * @param valid_responses array of valid responses
+     * @param persist whether to keep the listener after a valid response
+     * @param allow_held_keys allow held keys
+     * @param minimum_rt set a minimum response time
+     */
     Resizer.prototype.get_keyboard_response = function (callback_function, valid_responses, persist, allow_held_keys, minimum_rt) {
         var _this = this;
         var start_time = performance.now();
@@ -259,10 +247,16 @@ var Resizer = /** @class */ (function () {
         };
         this.listeners.push(listener);
     };
+    /**
+     * Start the ball animation.
+     */
     Resizer.prototype.start_ball = function () {
         this.get_keyboard_response(this.record_position.bind(this), [' '], false, false, 0);
         this.ball_animation_frame_id = requestAnimationFrame(this.animate_ball.bind(this));
     };
+    /**
+     * Record the ball position.
+     */
     Resizer.prototype.record_position = function () {
         cancelAnimationFrame(this.ball_animation_frame_id);
         var x = this.accurate_round(this.getElementCenter(this.ball).x, 2);
@@ -276,6 +270,9 @@ var Resizer = /** @class */ (function () {
             this.reset_ball_wait_for_start();
         }
     };
+    /**
+     * Finalize the blindspot task.
+     */
     Resizer.prototype.finalize_blindspot_task = function () {
         var angle = 13.5;
         var sum = this.blindspot_data.ball_pos.reduce(function (a, b) { return a + b; }, 0);
@@ -285,7 +282,7 @@ var Resizer = /** @class */ (function () {
         this.view_distance = ball_square_distance / Math.tan((angle * Math.PI) / 180);
         console.log("View distance: ".concat(this.view_distance / 10, " cm"));
         this.remove_root_event_listeners();
-        var div = document.querySelector('#test');
+        var div = document.querySelector('#content');
         if (!div) {
             throw new Error('Test div not found');
         }
@@ -296,6 +293,9 @@ var Resizer = /** @class */ (function () {
         this.runner._events._currentItem._complete = this._complete_function_cache;
         this.runner._events._currentItem._complete();
     };
+    /**
+     * Reset the ball and wait for the start.
+     */
     Resizer.prototype.reset_ball_wait_for_start = function () {
         var rectX = this.container.getBoundingClientRect().width - 30;
         var ballX = rectX * 0.85; // define where the ball is
@@ -314,6 +314,9 @@ var Resizer = /** @class */ (function () {
         this.ball.style.left = "".concat(x + dx, "px");
         this.ball_animation_frame_id = requestAnimationFrame(this.animate_ball.bind(this));
     };
+    /**
+     * adds event listeners to the root element, which allow the keyboard responses to trigger functions.
+     */
     Resizer.prototype.add_root_event_listeners = function () {
         var _this = this;
         document.body.addEventListener('keydown', function (e) {
@@ -332,6 +335,13 @@ var Resizer = /** @class */ (function () {
             _this.held_keys.delete(e.key);
         });
     };
+    /**
+     * Check if a response is valid.
+     * @param valid_responses array of valid responses
+     * @param allow_held_keys allow held keys
+     * @param key key to check
+     * @returns boolean
+     */
     Resizer.prototype.check_valid_response = function (valid_responses, allow_held_keys, key) {
         if (allow_held_keys === void 0) { allow_held_keys = false; }
         if (!allow_held_keys && this.held_keys.has(key)) {
@@ -342,6 +352,11 @@ var Resizer = /** @class */ (function () {
         }
         return false;
     };
+    /**
+     * Get the center of an element.
+     * @param el element
+     * @returns object with x and y coordinates
+     */
     Resizer.prototype.getElementCenter = function (el) {
         var box = el.getBoundingClientRect();
         return {
@@ -349,6 +364,9 @@ var Resizer = /** @class */ (function () {
             y: box.top + box.height / 2,
         };
     };
+    /**
+     * removes the event listeners from the root element, which allow the keyboard responses to trigger functions.
+     */
     Resizer.prototype.remove_root_event_listeners = function () {
         var _this = this;
         this.listeners = [];
@@ -368,6 +386,12 @@ var Resizer = /** @class */ (function () {
             _this.held_keys.add(e.key);
         });
     };
+    /**
+     * Rounds a number to a specified number of decimal places.
+     * @param value number to round
+     * @param decimals number of decimal places
+     * @returns rounded number
+     */
     Resizer.prototype.accurate_round = function (value, decimals) {
         return Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals);
     };
