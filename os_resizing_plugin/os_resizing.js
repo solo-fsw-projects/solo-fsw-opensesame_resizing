@@ -217,8 +217,7 @@ var Resizer = /** @class */ (function () {
         });
     };
     Resizer.prototype.start_blindspot_task = function () {
-        debugger;
-        var div = document.querySelector('#test');
+        var div = document.querySelector('#insert_name');
         if (!div) {
             throw new Error('Test div not found');
         }
@@ -234,10 +233,6 @@ var Resizer = /** @class */ (function () {
         var ball_div = this.container.querySelector("#virtual-chinrest-circle");
         if (!ball_div) {
             throw new Error('Virtual chinrest circle not found');
-        }
-        var square = this.container.querySelector("#virtual-chinrest-square");
-        if (!square) {
-            throw new Error('Virtual chinrest square not found');
         }
         this.ball = ball_div;
         this.reset_ball_wait_for_start();
@@ -270,7 +265,7 @@ var Resizer = /** @class */ (function () {
     };
     Resizer.prototype.record_position = function () {
         cancelAnimationFrame(this.ball_animation_frame_id);
-        var x = parseInt(this.ball.style.left);
+        var x = this.accurate_round(this.getElementCenter(this.ball).x, 2);
         this.blindspot_data.ball_pos.push(x);
         this.reps_remaining--;
         document.querySelector("#click").textContent = Math.max(this.reps_remaining, 0).toString();
@@ -284,7 +279,7 @@ var Resizer = /** @class */ (function () {
     Resizer.prototype.finalize_blindspot_task = function () {
         var angle = 13.5;
         var sum = this.blindspot_data.ball_pos.reduce(function (a, b) { return a + b; }, 0);
-        var avg = accurate_round(sum / this.blindspot_data.ball_pos.length, 2);
+        var avg = this.accurate_round(sum / this.blindspot_data.ball_pos.length, 2);
         this.blindspot_data.avg_ball_pos = avg;
         var ball_square_distance = (this.blindspot_data['square_pos'] - avg) / this.px2mm;
         this.view_distance = ball_square_distance / Math.tan((angle * Math.PI) / 180);
@@ -300,9 +295,6 @@ var Resizer = /** @class */ (function () {
         document.body.getElementsByTagName('main')[0].style.display = 'flex';
         this.runner._events._currentItem._complete = this._complete_function_cache;
         this.runner._events._currentItem._complete();
-        function accurate_round(value, decimals) {
-            return Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals);
-        }
     };
     Resizer.prototype.reset_ball_wait_for_start = function () {
         var rectX = this.container.getBoundingClientRect().width - 30;
@@ -313,7 +305,7 @@ var Resizer = /** @class */ (function () {
         }
         this.ball.style.left = "".concat(ballX, "px");
         square.style.left = "".concat(rectX, "px");
-        this.blindspot_data["square_pos"] = this.getElementCenter(square).x, 2;
+        this.blindspot_data["square_pos"] = this.accurate_round(this.getElementCenter(square).x, 2);
         this.get_keyboard_response(this.start_ball.bind(this), [' '], false, false, 0);
     };
     Resizer.prototype.animate_ball = function () {
@@ -375,6 +367,9 @@ var Resizer = /** @class */ (function () {
             }
             _this.held_keys.add(e.key);
         });
+    };
+    Resizer.prototype.accurate_round = function (value, decimals) {
+        return Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals);
     };
     return Resizer;
 }());

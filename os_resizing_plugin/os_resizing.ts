@@ -4,7 +4,7 @@
  * the aspect ratio during resizing.
  *
  * @remarks
- * The class creates a test div element, a resize element, and a button to trigger the resize.
+ * The class creates a content div element, a resize element, and a button to trigger the resize.
  * It also handles mouse events to allow dragging and resizing of the element.
  *
  * @example
@@ -18,11 +18,11 @@
  * @property {number} aspect_ratio - The aspect ratio of the card (width/height).
  * @property {number} px2mm - The conversion factor from pixels to millimeters.
  *
- * @method test_div - Creates and styles a test div element, and appends it to the canvas parent.
- * @method force_canvas_size - Forces the test div element to match the canvas size.
- * @method create_resize_element - Creates a resizable element and appends it to the test div.
+ * @method test_div - Creates and styles a content div element, and appends it to the canvas parent.
+ * @method force_canvas_size - Forces the content div element to match the canvas size.
+ * @method create_resize_element - Creates a resizable element and appends it to the content div.
  * @method create_drag_element - Creates a draggable element for resizing and appends it to the resize element.
- * @method create_btn - Creates a button to trigger the resize and appends it to the test div.
+ * @method create_btn - Creates a button to trigger the resize and appends it to the content div.
  * @method resize_object - Handles the resizing logic and updates the canvas size based on the resize element.
  */
 class Resizer {
@@ -49,12 +49,16 @@ class Resizer {
 
     constructor(runner: any) {
         this.runner = runner;
-        var content = this.create_content_wrapper();
-        this.test_div(content);
+        var content_wrapper = this.create_content_wrapper();
+        this.content_div(content_wrapper);
         this.resize_object();
         this.get_keyboard_response = this.get_keyboard_response.bind(this);
     }
 
+    /**
+     * Creates and styles a content wrapper div element, and appends it to the body.
+     * @returns {HTMLElement} The content wrapper div element.
+     */
     create_content_wrapper() {
         const content_wrapper = document.createElement('div');
         content_wrapper.id = 'content-wrapper';
@@ -69,59 +73,31 @@ class Resizer {
     }
 
     /**
-     * Creates and styles a test div element, and appends it to the canvas parent.
+     * Creates and styles a content div element, and appends it to the canvas parent.
      * @returns {void}
      */
-    test_div(content: HTMLElement): void {
-        var test = document.createElement('div');
-        test.id = 'test';
-        //set_div_style();
-        test.style.textAlign = 'center';
-        test.style.margin = 'auto';
-        var canvas = document.getElementsByTagName('canvas')[0];
-        this.force_canvas_size(test, canvas);
+    content_div(content_wrapper: HTMLElement): void {
+        var content = document.createElement('div');
+        content.id = 'content';
+        content.style.textAlign = 'center';
+        content.style.margin = 'auto';
+
         document.body.getElementsByTagName('main')[0].style.display = 'none';
+
         let insert_name = document.createElement('div');
         insert_name.id = 'insert_name';
         insert_name.style.width = '900px';
         insert_name.style.margin = '0 auto';
+
         this.create_resize_element(insert_name);
         this.create_btn(insert_name);
-        test.appendChild(insert_name);
-        content.appendChild(test);
-        // var parent = canvas.parentElement;
-        // parent?.appendChild(test);
-
-        function set_div_style() {
-            test.style.display = 'inline-block';
-            test.style.position = 'relative';
-            test.style.top = '0';
-            test.style.left = '0';
-            test.style.right = '0';
-            test.style.bottom = '0';
-            test.style.margin = 'auto';
-            test.style.justifyContent = 'center';
-            test.style.alignItems = 'center';
-            test.style.zIndex = '11';
-        }
+        content.appendChild(insert_name);
+        content_wrapper.appendChild(content);
     }
 
     /**
-     * This function forces the test div element to match the canvas size.
-     * @param test div element that contains the resize element
-     * @param canvas the canvas element created by OSWeb that contains the correct dimensions
-     */
-    force_canvas_size(test, canvas): void {
-        //test.style.maxWidth = canvas.clientWidth + 'px';
-        //test.style.maxHeight = canvas.clientHeight + 'px';
-        //test.style.width = canvas.clientWidth + 'px';
-        //test.style.height = canvas.clientHeight + 'px';
-        canvas.style.display = 'none';
-    }
-
-    /**
-     * Creates the resizing element and appends it to the test div.
-     * @param test test div element that will contain the resize element
+     * Creates the resizing element and appends it to the content div.
+     * @param content content div element that will contain the resize element
      */
     create_resize_element(insert_name: HTMLElement): void {
         let page_size = document.createElement('div');
@@ -170,24 +146,28 @@ class Resizer {
     }
 
     /**
-     * Creates a button to trigger the resize and appends it to the test div.
-     * @param test test div element that contains the resize element
+     * Creates a button to trigger the resize and appends it to the content div.
+     * @param content content div element that contains the resize element
      */
     create_btn(insert_name: HTMLElement) {
         let btn = document.createElement('button');
         btn.id = 'resize_btn';
         btn.textContent = 'Resize';
+
         btn.style.display = 'inline-block';
         btn.style.margin = '0.75em';
         btn.style.textAlign = 'center';
         btn.style.verticalAlign = 'middle';
         btn.style.position = 'relative';
         btn.style.bottom = '0';
+
         insert_name.appendChild(btn);
     }
 
     /**
      * Handles the resizing logic and updates the canvas size based on the resize element.
+     * @returns {void}
+     * @throws {Error} Resize element not found
      */
     resize_object() {
         this._complete_function_cache = this.runner._events._currentItem._complete; // cache the complete function
@@ -233,9 +213,11 @@ class Resizer {
         });
     }
 
+    /**
+     * Starts the blindspot task.
+     */
     start_blindspot_task() {
-        debugger;
-        let div = document.querySelector<HTMLElement>('#test');
+        let div = document.querySelector<HTMLElement>('#insert_name');
         if (!div) {
             throw new Error('Test div not found');
         }
@@ -278,16 +260,19 @@ class Resizer {
             throw new Error('Virtual chinrest circle not found');
         }
 
-        const square = this.container.querySelector<HTMLElement>("#virtual-chinrest-square");
-        if (!square) {
-            throw new Error('Virtual chinrest square not found');
-        }
-
         this.ball = ball_div;
         
         this.reset_ball_wait_for_start();
     }
 
+    /**
+     * Get a keyboard response.
+     * @param callback_function function to be triggered on response 
+     * @param valid_responses array of valid responses
+     * @param persist whether to keep the listener after a valid response
+     * @param allow_held_keys allow held keys
+     * @param minimum_rt set a minimum response time
+     */
     get_keyboard_response(
         callback_function: (response: { key: string, rt: number }) => void,
         valid_responses: string[],
@@ -316,6 +301,9 @@ class Resizer {
         this.listeners.push(listener);
     }
 
+    /**
+     * Start the ball animation.
+     */
     start_ball() {
         this.get_keyboard_response(
             this.record_position.bind(this),
@@ -328,9 +316,12 @@ class Resizer {
         this.ball_animation_frame_id = requestAnimationFrame(this.animate_ball.bind(this));
     }
 
+    /**
+     * Record the ball position.
+     */
     record_position() {
         cancelAnimationFrame(this.ball_animation_frame_id);
-        const x = parseInt(this.ball.style.left);
+        const x = this.accurate_round(this.getElementCenter(this.ball).x, 2);
         this.blindspot_data.ball_pos.push(x);
         this.reps_remaining--;
 
@@ -346,17 +337,20 @@ class Resizer {
         }
     }
 
+    /**
+     * Finalize the blindspot task.
+     */
     finalize_blindspot_task() {
         const angle = 13.5;
         const sum = this.blindspot_data.ball_pos.reduce((a, b) => a + b, 0);
-        const avg = accurate_round(sum / this.blindspot_data.ball_pos.length, 2);
+        const avg = this.accurate_round(sum / this.blindspot_data.ball_pos.length, 2);
         this.blindspot_data.avg_ball_pos = avg;
         const ball_square_distance = (this.blindspot_data['square_pos'] - avg) / this.px2mm;
 
         this.view_distance = ball_square_distance / Math.tan((angle * Math.PI) / 180);
         console.log(`View distance: ${this.view_distance / 10} cm`);
         this.remove_root_event_listeners();
-        let div = document.querySelector<HTMLElement>('#test');
+        let div = document.querySelector<HTMLElement>('#content');
         if (!div) {
             throw new Error('Test div not found');
         }
@@ -370,11 +364,12 @@ class Resizer {
         this.runner._events._currentItem._complete = this._complete_function_cache;
         this.runner._events._currentItem._complete();
 
-        function accurate_round(value, decimals) {
-            return Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals);
-        }
+        
     }
 
+    /**
+     * Reset the ball and wait for the start.
+     */
     reset_ball_wait_for_start() {
         const rectX = this.container.getBoundingClientRect().width - 30;
         const ballX = rectX * 0.85; // define where the ball is
@@ -387,7 +382,7 @@ class Resizer {
         this.ball.style.left = `${ballX}px`;
         square.style.left = `${rectX}px`;
 
-        this.blindspot_data["square_pos"] = this.getElementCenter(square).x, 2;
+        this.blindspot_data["square_pos"] = this.accurate_round(this.getElementCenter(square).x, 2);
 
         this.get_keyboard_response(
             this.start_ball.bind(this),
@@ -405,6 +400,9 @@ class Resizer {
         this.ball_animation_frame_id = requestAnimationFrame(this.animate_ball.bind(this));
     }
 
+    /**
+     * adds event listeners to the root element, which allow the keyboard responses to trigger functions.
+     */
     add_root_event_listeners() {
         document.body.addEventListener('keydown', (e) => {
             for (const listener of [...this.listeners]) {
@@ -423,6 +421,13 @@ class Resizer {
         });
     }
 
+    /**
+     * Check if a response is valid.
+     * @param valid_responses array of valid responses
+     * @param allow_held_keys allow held keys
+     * @param key key to check
+     * @returns boolean
+     */	
     check_valid_response(valid_responses: string[], allow_held_keys: boolean = false, key: string) {
         if (!allow_held_keys && this.held_keys.has(key)) {
             return false;
@@ -435,14 +440,22 @@ class Resizer {
         return false;
     }
 
+    /**
+     * Get the center of an element.
+     * @param el element
+     * @returns object with x and y coordinates
+     */	
     getElementCenter(el: HTMLElement) {
         const box = el.getBoundingClientRect();
         return {
           x: box.left + box.width / 2,
           y: box.top + box.height / 2,
         };
-      }
+    }
 
+    /**
+     * removes the event listeners from the root element, which allow the keyboard responses to trigger functions.
+     */ 
     remove_root_event_listeners() {
         this.listeners = [];
         document.body.removeEventListener('keydown', (e) => {
@@ -460,6 +473,16 @@ class Resizer {
             }
             this.held_keys.add(e.key);
         });
+    }
+
+    /**
+     * Rounds a number to a specified number of decimal places.
+     * @param value number to round
+     * @param decimals number of decimal places
+     * @returns rounded number
+     */
+    accurate_round(value, decimals) {
+        return Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals);
     }
 }
 
