@@ -49,26 +49,48 @@ class Resizer {
 
     constructor(runner: any) {
         this.runner = runner;
-        this.test_div();
+        var content = this.create_content_wrapper();
+        this.test_div(content);
         this.resize_object();
         this.get_keyboard_response = this.get_keyboard_response.bind(this);
+    }
+
+    create_content_wrapper() {
+        const content_wrapper = document.createElement('div');
+        content_wrapper.id = 'content-wrapper';
+        content_wrapper.style.display = 'flex';
+        content_wrapper.style.flexDirection = 'column';
+        content_wrapper.style.margin = 'auto';
+        content_wrapper.style.width = '100%';
+        content_wrapper.style.flex = '1 1 100%';
+        content_wrapper.style.overflowY = 'auto';
+        document.body.appendChild(content_wrapper);
+        return content_wrapper;
     }
 
     /**
      * Creates and styles a test div element, and appends it to the canvas parent.
      * @returns {void}
      */
-    test_div(): void {
+    test_div(content: HTMLElement): void {
         var test = document.createElement('div');
         test.id = 'test';
-        test.textContent = 'test';
-        set_div_style();
+        //set_div_style();
+        test.style.textAlign = 'center';
+        test.style.margin = 'auto';
         var canvas = document.getElementsByTagName('canvas')[0];
         this.force_canvas_size(test, canvas);
-        this.create_resize_element(test);
-        this.create_btn(test);
-        var parent = canvas.parentElement;
-        parent?.appendChild(test);
+        document.body.getElementsByTagName('main')[0].style.display = 'none';
+        let insert_name = document.createElement('div');
+        insert_name.id = 'insert_name';
+        insert_name.style.width = '900px';
+        insert_name.style.margin = '0 auto';
+        this.create_resize_element(insert_name);
+        this.create_btn(insert_name);
+        test.appendChild(insert_name);
+        content.appendChild(test);
+        // var parent = canvas.parentElement;
+        // parent?.appendChild(test);
 
         function set_div_style() {
             test.style.display = 'inline-block';
@@ -90,35 +112,39 @@ class Resizer {
      * @param canvas the canvas element created by OSWeb that contains the correct dimensions
      */
     force_canvas_size(test, canvas): void {
-        if (test) {
-            test.style.maxWidth = canvas.clientWidth + 'px';
-            test.style.maxHeight = canvas.clientHeight + 'px';
-            test.style.width = canvas.clientWidth + 'px';
-            test.style.height = canvas.clientHeight + 'px';
-            canvas.style.display = 'none';
-        }
+        //test.style.maxWidth = canvas.clientWidth + 'px';
+        //test.style.maxHeight = canvas.clientHeight + 'px';
+        //test.style.width = canvas.clientWidth + 'px';
+        //test.style.height = canvas.clientHeight + 'px';
+        canvas.style.display = 'none';
     }
 
     /**
      * Creates the resizing element and appends it to the test div.
      * @param test test div element that will contain the resize element
      */
-    create_resize_element(test: HTMLElement): void {
+    create_resize_element(insert_name: HTMLElement): void {
+        let page_size = document.createElement('div');
+        page_size.id = 'page_size';
+        insert_name.appendChild(page_size);
         this.aspect_ratio = this.init_width / this.init_height;
         let resize_element = document.createElement('div');
         resize_element.id = 'resize_element';
-        resize_element.style.position = 'relative';
         let start_div_height = 
             this.aspect_ratio < 1 ? this.init_resize_element : Math.round(this.init_resize_element / this.aspect_ratio); // aspect ratio < 1 means width < height
         let start_div_width = 
             this.aspect_ratio < 1 ? Math.round(this.init_resize_element / this.aspect_ratio) : this.init_resize_element;
         var adjust_size = Math.round(start_div_width * 0.1);
+        
+        resize_element.style.border = 'none';
         resize_element.style.height = start_div_height + 'px';
         resize_element.style.width = start_div_width + 'px';
+        resize_element.style.margin = '5px auto';
         resize_element.style.background = '#006600';
-        resize_element.style.cursor = 'nwse-resize';
+        resize_element.style.position = 'relative';
+
         this.create_drag_element(resize_element, adjust_size);
-        test.appendChild(resize_element);
+        page_size.appendChild(resize_element);
     }
 
     /**
@@ -130,11 +156,15 @@ class Resizer {
         let drag_element = document.createElement('div');
         drag_element.id = 'drag_element';
         drag_element.style.position = 'absolute';
+        drag_element.style.cursor = 'nwse-resize';
         drag_element.style.bottom = '0';
         drag_element.style.right = '0';
         drag_element.style.width = adjust_size + 'px';
         drag_element.style.height = adjust_size + 'px';
-        drag_element.style.background = 'blue';
+        drag_element.style.border = '1px solid red';
+        drag_element.style.backgroundColor = 'none';
+        drag_element.style.borderLeft = '0';
+        drag_element.style.borderTop = '0';
         drag_element.style.cursor = 'move';
         resize_element.appendChild(drag_element);
     }
@@ -143,13 +173,17 @@ class Resizer {
      * Creates a button to trigger the resize and appends it to the test div.
      * @param test test div element that contains the resize element
      */
-    create_btn(test: HTMLElement) {
+    create_btn(insert_name: HTMLElement) {
         let btn = document.createElement('button');
         btn.id = 'resize_btn';
         btn.textContent = 'Resize';
+        btn.style.display = 'inline-block';
+        btn.style.margin = '0.75em';
+        btn.style.textAlign = 'center';
+        btn.style.verticalAlign = 'middle';
         btn.style.position = 'relative';
         btn.style.bottom = '0';
-        test.appendChild(btn);
+        insert_name.appendChild(btn);
     }
 
     /**
@@ -194,12 +228,13 @@ class Resizer {
 
         document.querySelector('#resize_btn')?.addEventListener('click', () => {
             let element_width = resize_element.getBoundingClientRect().width;
-            this.px2mm = this.init_width / element_width;
+            this.px2mm = element_width / this.init_width;
             this.start_blindspot_task();
         });
     }
 
     start_blindspot_task() {
+        debugger;
         let div = document.querySelector<HTMLElement>('#test');
         if (!div) {
             throw new Error('Test div not found');
@@ -249,8 +284,6 @@ class Resizer {
         }
 
         this.ball = ball_div;
-
-        this.blindspot_data["square_pos"] = this.getElementCenter(square).x, 2;
         
         this.reset_ball_wait_for_start();
     }
@@ -316,13 +349,30 @@ class Resizer {
     finalize_blindspot_task() {
         const angle = 13.5;
         const sum = this.blindspot_data.ball_pos.reduce((a, b) => a + b, 0);
-        const avg = sum / this.blindspot_data.ball_pos.length;
+        const avg = accurate_round(sum / this.blindspot_data.ball_pos.length, 2);
         this.blindspot_data.avg_ball_pos = avg;
-        const ball_square_distance = (this.blindspot_data.square_pos - avg) / this.px2mm;
+        const ball_square_distance = (this.blindspot_data['square_pos'] - avg) / this.px2mm;
 
-        this.view_distance = ball_square_distance / Math.tan(angle * Math.PI / 180);
+        this.view_distance = ball_square_distance / Math.tan((angle * Math.PI) / 180);
+        console.log(`View distance: ${this.view_distance / 10} cm`);
+        this.remove_root_event_listeners();
+        let div = document.querySelector<HTMLElement>('#test');
+        if (!div) {
+            throw new Error('Test div not found');
+        }
+        div.style.display = 'none';
         
+
+        let canvas = document.getElementsByTagName('canvas')[0];
+        canvas.style.display = 'inline-block';
+        document.body.getElementsByTagName('main')[0].style.display = 'flex';
+
         this.runner._events._currentItem._complete = this._complete_function_cache;
+        this.runner._events._currentItem._complete();
+
+        function accurate_round(value, decimals) {
+            return Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals);
+        }
     }
 
     reset_ball_wait_for_start() {
@@ -337,7 +387,7 @@ class Resizer {
         this.ball.style.left = `${ballX}px`;
         square.style.left = `${rectX}px`;
 
-        this.blindspot_data.square_pos = rectX;
+        this.blindspot_data["square_pos"] = this.getElementCenter(square).x, 2;
 
         this.get_keyboard_response(
             this.start_ball.bind(this),
@@ -392,6 +442,25 @@ class Resizer {
           y: box.top + box.height / 2,
         };
       }
+
+    remove_root_event_listeners() {
+        this.listeners = [];
+        document.body.removeEventListener('keydown', (e) => {
+            this.held_keys.delete(e.key);
+        });
+
+        document.body.removeEventListener('keyup', (e) => {
+            for (const listener of [...this.listeners]) {
+                try {
+                    listener(e);
+                }
+                catch (error) {
+                    console.error(error);
+                }
+            }
+            this.held_keys.add(e.key);
+        });
+    }
 }
 
 type KeyboardListener = (e: KeyboardEvent) => void; 
