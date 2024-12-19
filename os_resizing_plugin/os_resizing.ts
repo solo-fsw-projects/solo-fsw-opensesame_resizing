@@ -363,9 +363,9 @@ class Resizer {
 
         this.runner._events._currentItem._complete = this._complete_function_cache;
         this.runner._events._currentItem._complete();
-
-        
     }
+
+
 
     /**
      * Reset the ball and wait for the start.

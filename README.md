@@ -1,5 +1,5 @@
 # Resizing script for OSWeb
-This repository contains the source code for the *os_resizing.js* script that resizes the canvases in OSWeb for consistent visual angles across participants. This ensures more accurate and trustworthy results and is based on the jspsych[^1] implementation of the virtual chinrest[^2].
+This repository contains the source code (*os_resizing.ts*) for the *os_resizing.js* script that resizes the canvases in OSWeb for consistent visual angles across participants. This ensures more accurate and trustworthy results and is based on the jspsych[^1] implementation of the virtual chinrest[^2].
 
 ## Importing
 This package is supposed to be imported into OpenSesame directly, through the **OSWeb & JATOS control panel**. Under external libraries add the following:
@@ -15,14 +15,10 @@ document.head.appendChild(script);
 This will allow you to use the classes and functions in the *os_resizing.js* file directly in the inline javascript blocks in OpenSesame.
 
 ## Usage
-It takes a couple milliseconds to load the package, so the suggestion for now is to have a canvas or some kind of buffer item that will bridge the gap. After this, create another '*inline_javascript*' block and create a new instance of the **Resizer** class by typing `var *variable name* = new Resizer();` in the run tab. The initialization of the class will run the resizing task automatically. As shown in the example experiment, the recommendation is to have another 'buffer', in this case a focus point. This canvas will be visible after the resizing task has been completed.
+It takes a couple milliseconds to load the package, so the suggestion for now is to have a canvas or some kind of buffer item that will bridge the gap. After this, create another '*inline_javascript*' block and create a new instance of the **Resizer** class by typing `var *variable name* = new Resizer();` in the run tab. The initialization of the class will run the resizing and blindspot tasks automatically. As shown in the example experiment, some kind of canvas is needed while the resizer is working. This canvas will not be seen, but if it's not added, the rest of the experiment might be compromised.
 
 ### Scaling
-To scale items to real world millimeters in OpenSesame sketchpads, draw or import the desired object. choose the desired size in mm for height and with and divide it by the property `px2mm` (pixels to millimeter) of the Resizer object as such (this example is a white square of 30x30mm):
-```
-draw rect color=white fill=1 h="{30/*variable name*.px2mm}" penwidth=1 show_if=True w="{30/*variable name*.px2mm}" x=-32 y=-32 z_index=0
-``` 
-This will make sure the dimensions on the canvas match to the real world metric.
+The scaling will be done automatically. The resizer class calculates the visual angle, and will scale the canvas object to match the visual angle. This should ensure a similar experience for all users.
  
 
 
