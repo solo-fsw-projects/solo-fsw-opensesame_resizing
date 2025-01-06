@@ -35,7 +35,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
  * @method resize_object - Handles the resizing logic and updates the canvas size based on the resize element.
  */
 var Resizer = /** @class */ (function () {
-    function Resizer(runner) {
+    function Resizer(runner, developed_distance) {
         this.init_height = 53.98;
         this.init_width = 85.6;
         this.init_resize_element = 250;
@@ -47,6 +47,7 @@ var Resizer = /** @class */ (function () {
             avg_ball_pos: 0,
             square_pos: 0,
         };
+        this.developed_distance = developed_distance;
         this.runner = runner;
         var content_wrapper = this.create_content_wrapper();
         this.content_div(content_wrapper);
@@ -280,7 +281,7 @@ var Resizer = /** @class */ (function () {
         this.blindspot_data.avg_ball_pos = avg;
         var ball_square_distance = (this.blindspot_data['square_pos'] - avg) / this.px2mm;
         this.view_distance = ball_square_distance / Math.tan((angle * Math.PI) / 180);
-        console.log("View distance: ".concat(this.view_distance / 10, " cm"));
+        this.scale_factor = this.view_distance / this.developed_distance;
         this.remove_root_event_listeners();
         var div = document.querySelector('#content');
         if (!div) {
@@ -288,6 +289,14 @@ var Resizer = /** @class */ (function () {
         }
         div.style.display = 'none';
         var canvas = document.getElementsByTagName('canvas')[0];
+        var new_width = Math.round(this.runner._experiment.vars.get('width') * this.scale_factor);
+        var new_height = Math.round(this.runner._experiment.vars.get('height') * this.scale_factor);
+        // this.runner._experiment.vars.set('width', new_width);
+        // this.runner._experiment.vars.set('height', new_height);
+        this.runner._renderer.width = new_width;
+        this.runner._renderer.height = new_height;
+        canvas.width = new_width;
+        canvas.height = new_height;
         canvas.style.display = 'inline-block';
         document.body.getElementsByTagName('main')[0].style.display = 'flex';
         this.runner._events._currentItem._complete = this._complete_function_cache;

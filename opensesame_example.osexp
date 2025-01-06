@@ -1,7 +1,7 @@
 ---
 API: 3
-OpenSesame: 4.0.5
-Platform: nt
+OpenSesame: 4.0.24
+Platform: posix
 ---
 set width 1024
 set title "New experiment"
@@ -12,7 +12,10 @@ set sound_sample_size -16
 set sound_freq 48000
 set sound_channels 2
 set sound_buf_size 1024
+set sampler_backend osweb
 set round_decimals 2
+set mouse_backend osweb
+set keyboard_backend osweb
 set jatos_uuid "45e1eda8-5a4f-fe26-ab37-755c27c80e80"
 set height 768
 set fullscreen no
@@ -20,12 +23,14 @@ set form_clicks no
 set foreground white
 set font_underline no
 set font_size 18
-set font_italic no
+set font_italic False
 set font_family mono
-set font_bold no
-set experiment_path "C:/Users/werrecpd1/Desktop/solo-fsw-opensesame_resizing"
-set disable_garbage_collection yes
+set font_bold False
+set experiment_path "/Users/coenwerre/Desktop/solo-fsw-opensesame_resizing"
+set disable_garbage_collection True
 set description "The main experiment item"
+set color_backend osweb
+set clock_backend osweb
 set canvas_backend osweb
 set background "#3d3846"
 
@@ -34,8 +39,8 @@ define sequence experiment
 	set description "Runs a number of items in sequence"
 	run getting_started True
 	run new_inline_javascript True
-	run welcome True
 	run new_1_inline_javascript True
+	run welcome True
 	run new_2_sketchpad True
 	run new_loop True
 
@@ -55,7 +60,14 @@ define notepad getting_started
 
 define inline_javascript new_1_inline_javascript
 	set description "Executes Python code"
-	set _run "var test = new Resizer(runner);"
+	___run__
+	var test = new Resizer(runner, 440);
+	//let current_width = width;
+	//let current_height = height;
+	//let scale_factor = Math.round(440 / test.view_distance, 2);
+	//height = height*scale_factor;
+	//width = width*scale_factor;
+	__end__
 	set _prepare ""
 
 define sketchpad new_1_sketchpad
@@ -87,7 +99,7 @@ define form_text_display new_form_text_display
 
 define inline_javascript new_inline_javascript
 	set description "Executes Python code"
-	set _run ""
+	set _run "debugger;"
 	___prepare__
 	var script = document.createElement('script');
 	//script.src = "https://solo-fsw-projects.github.io/solo-fsw-opensesame_resizing/os_resizing_plugin/os_resizing.js";
@@ -116,8 +128,7 @@ define sequence new_sequence
 define sketchpad new_sketchpad
 	set duration keypress
 	set description "Displays stimuli"
-	draw rect color=white fill=1 h=64 penwidth=1 show_if=True w=64 x=-32 y=-320 z_index=0
-	draw rect color=white fill=1 h="{30/test.px2mm}" penwidth=1 show_if=True w="{30/test.px2mm}" x=-32 y=-32 z_index=0
+	draw rect color=white fill=1 h=128 penwidth=1 show_if=True w=128 x=-64 y=-64 z_index=0
 
 define sketchpad welcome
 	set start_response_interval no

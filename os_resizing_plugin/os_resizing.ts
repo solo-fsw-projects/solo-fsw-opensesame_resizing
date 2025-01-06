@@ -45,9 +45,12 @@ class Resizer {
     px2mm: number;
     runner: any;
     view_distance: number;
+    developed_distance: number;
+    scale_factor: number;
 
 
-    constructor(runner: any) {
+    constructor(runner: any, developed_distance: number) {
+        this.developed_distance = developed_distance;
         this.runner = runner;
         var content_wrapper = this.create_content_wrapper();
         this.content_div(content_wrapper);
@@ -348,7 +351,7 @@ class Resizer {
         const ball_square_distance = (this.blindspot_data['square_pos'] - avg) / this.px2mm;
 
         this.view_distance = ball_square_distance / Math.tan((angle * Math.PI) / 180);
-        console.log(`View distance: ${this.view_distance / 10} cm`);
+        this.scale_factor = this.view_distance / this.developed_distance;
         this.remove_root_event_listeners();
         let div = document.querySelector<HTMLElement>('#content');
         if (!div) {
@@ -356,16 +359,20 @@ class Resizer {
         }
         div.style.display = 'none';
         
-
         let canvas = document.getElementsByTagName('canvas')[0];
+        let new_width = Math.round(this.runner._experiment.vars.get('width') * this.scale_factor);
+        let new_height = Math.round(this.runner._experiment.vars.get('height') * this.scale_factor);
+        // this.runner._experiment.vars.set('width', new_width);
+        // this.runner._experiment.vars.set('height', new_height);
+        this.runner._renderer.width = new_width;
+        this.runner._renderer.height = new_height;
+        canvas.width = new_width;
+        canvas.height = new_height;
         canvas.style.display = 'inline-block';
         document.body.getElementsByTagName('main')[0].style.display = 'flex';
-
         this.runner._events._currentItem._complete = this._complete_function_cache;
         this.runner._events._currentItem._complete();
     }
-
-
 
     /**
      * Reset the ball and wait for the start.
