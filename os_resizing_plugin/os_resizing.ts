@@ -360,14 +360,11 @@ class Resizer {
         div.style.display = 'none';
         
         let canvas = document.getElementsByTagName('canvas')[0];
-        let new_width = Math.round(this.runner._experiment.vars.get('width') * this.scale_factor);
+        let new_width = Math.round(this.runner._experiment.vars.get('width') * this.scale_factor); // calculate new width and height
         let new_height = Math.round(this.runner._experiment.vars.get('height') * this.scale_factor);
-        // this.runner._experiment.vars.set('width', new_width);
-        // this.runner._experiment.vars.set('height', new_height);
-        this.runner._renderer.width = new_width;
-        this.runner._renderer.height = new_height;
-        canvas.width = new_width;
-        canvas.height = new_height;
+        this.runner._experiment.vars.set('width', new_width); // set new width and height for the experiment
+        this.runner._experiment.vars.set('height', new_height);
+        this.runner._renderer.resize(new_width, new_height); // resize the renderer
         canvas.style.display = 'inline-block';
         document.body.getElementsByTagName('main')[0].style.display = 'flex';
         this.runner._events._currentItem._complete = this._complete_function_cache;
