@@ -241,8 +241,6 @@ var Resizer = /** @class */ (function () {
                         _this.listeners.splice(index, 1);
                     }
                 }
-                console.log('response', e.key, rt);
-                console.log('function', callback_function);
                 callback_function({ key: e.key, rt: rt });
             }
         };
@@ -280,20 +278,22 @@ var Resizer = /** @class */ (function () {
         var avg = this.accurate_round(sum / this.blindspot_data.ball_pos.length, 2);
         this.blindspot_data.avg_ball_pos = avg;
         var ball_square_distance = (this.blindspot_data['square_pos'] - avg) / this.px2mm;
-        this.view_distance = ball_square_distance / Math.tan((angle * Math.PI) / 180);
-        this.scale_factor = this.view_distance / this.developed_distance;
+        this.view_distance = ball_square_distance / Math.tan((angle * Math.PI) / 180); // calculate view distance
+        this.scale_factor = this.view_distance / this.developed_distance; // calculate scaling factor
         this.remove_root_event_listeners();
         var div = document.querySelector('#content');
-        if (!div) {
+        if (!div) { // check if the test div exists
             throw new Error('Test div not found');
         }
         div.style.display = 'none';
         var canvas = document.getElementsByTagName('canvas')[0];
-        var new_width = Math.round(this.runner._experiment.vars.get('width') * this.scale_factor);
+        var new_width = Math.round(this.runner._experiment.vars.get('width') * this.scale_factor); // calculate new width and height
         var new_height = Math.round(this.runner._experiment.vars.get('height') * this.scale_factor);
-        this.runner._experiment.vars.set('width', new_width);
-        this.runner._experiment.vars.set('height', new_height);
-        this.runner._renderer.resize(new_width, new_height);
+        // this.runner._experiment.vars.set('width', new_width); // set new width and height for the experiment
+        // this.runner._experiment.vars.set('height', new_height);
+        canvas.style.width = "".concat(new_width, "px"); // set the canvas width and height
+        canvas.style.height = "".concat(new_height, "px");
+        // this.runner._renderer.resize(new_width, new_height); // resize the renderer
         canvas.style.display = 'inline-block';
         document.body.getElementsByTagName('main')[0].style.display = 'flex';
         this.runner._events._currentItem._complete = this._complete_function_cache;

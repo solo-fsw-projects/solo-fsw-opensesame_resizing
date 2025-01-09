@@ -61,7 +61,7 @@ define notepad getting_started
 define inline_javascript new_1_inline_javascript
 	set description "Executes Python code"
 	___run__
-	var test = new Resizer(runner, 440);
+	var test = new Resizer(runner);
 	//let current_width = width;
 	//let current_height = height;
 	//let scale_factor = Math.round(440 / test.view_distance, 2);
@@ -79,6 +79,11 @@ define sketchpad new_2_sketchpad
 	set duration keypress
 	set description "Displays stimuli"
 	draw fixdot color=white show_if=True style=default x=0 y=0 z_index=0
+
+define sketchpad new_3_sketchpad
+	set duration keypress
+	set description "Displays stimuli"
+	draw rect color=white fill=1 h=100 penwidth=1 show_if=True w=100 x=-50 y=-50 z_index=0
 
 define form_text_display new_form_text_display
 	set timeout infinite
@@ -99,7 +104,7 @@ define form_text_display new_form_text_display
 
 define inline_javascript new_inline_javascript
 	set description "Executes Python code"
-	set _run "debugger;"
+	set _run ""
 	___prepare__
 	var script = document.createElement('script');
 	//script.src = "https://solo-fsw-projects.github.io/solo-fsw-opensesame_resizing/os_resizing_plugin/os_resizing.js";
@@ -124,11 +129,12 @@ define sequence new_sequence
 	set flush_keyboard yes
 	set description "Runs a number of items in sequence"
 	run new_sketchpad True
+	run new_3_sketchpad True
 
 define sketchpad new_sketchpad
 	set duration keypress
 	set description "Displays stimuli"
-	draw rect color=white fill=1 h="{128*test.scale_factor}" penwidth=1 show_if=True w="{128*test.scale_factor}" x="{-1*(128*test.scale_factor)/2}" y="{-1*(128*test.scale_factor)/2}" z_index=0
+	draw rect color=white fill=1 h=128 penwidth=1 show_if=True w=128 x=-64 y=-64 z_index=0
 
 define sketchpad welcome
 	set start_response_interval no
