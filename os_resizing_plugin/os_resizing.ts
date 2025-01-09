@@ -49,7 +49,7 @@ class Resizer {
     scale_factor: number;
 
 
-    constructor(runner: any, developed_distance: number) {
+    constructor(runner: any, developed_distance: number) { // TODO: add DPI and bool for perceived distance
         this.developed_distance = developed_distance;
         this.runner = runner;
         var content_wrapper = this.create_content_wrapper();
