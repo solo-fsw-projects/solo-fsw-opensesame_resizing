@@ -43,15 +43,24 @@ class Resizer {
     };
     aspect_ratio: number;
     px2mm: number;
+    calculated_dpi: number;
     runner: any;
     view_distance: number;
-    developed_distance: number;
+    development_dpi: number;
+    development_distance: number;
     scale_factor: number;
+    use_perceived_distance: boolean;
 
 
-    constructor(runner: any, developed_distance: number) { // TODO: add DPI and bool for perceived distance
-        this.developed_distance = developed_distance;
+    constructor(runner: any, use_perceived_distance: boolean, development_dpi: number, development_distance: number) { // TODO: add DPI and bool for perceived distance
+        this.development_dpi = development_dpi;
+        this.development_distance = development_distance;
+        this.use_perceived_distance = use_perceived_distance;
         this.runner = runner;
+        this.main();
+    }
+
+    private main() {
         var content_wrapper = this.create_content_wrapper();
         this.content_div(content_wrapper);
         this.resize_object();
@@ -79,7 +88,7 @@ class Resizer {
      * Creates and styles a content div element, and appends it to the canvas parent.
      * @returns {void}
      */
-    content_div(content_wrapper: HTMLElement): void {
+    private content_div(content_wrapper: HTMLElement): void {
         var content = document.createElement('div');
         content.id = 'content';
         content.style.textAlign = 'center';
@@ -102,7 +111,7 @@ class Resizer {
      * Creates the resizing element and appends it to the content div.
      * @param content content div element that will contain the resize element
      */
-    create_resize_element(insert_name: HTMLElement): void {
+    private create_resize_element(insert_name: HTMLElement): void {
         let page_size = document.createElement('div');
         page_size.id = 'page_size';
         insert_name.appendChild(page_size);
@@ -131,7 +140,7 @@ class Resizer {
      * @param resize_element Resize element that will contain the drag element
      * @param adjust_size The size of the drag element in pixels
      */
-    create_drag_element(resize_element: HTMLElement, adjust_size: number) {
+    private create_drag_element(resize_element: HTMLElement, adjust_size: number) {
         let drag_element = document.createElement('div');
         drag_element.id = 'drag_element';
         drag_element.style.position = 'absolute';
@@ -152,7 +161,7 @@ class Resizer {
      * Creates a button to trigger the resize and appends it to the content div.
      * @param content content div element that contains the resize element
      */
-    create_btn(insert_name: HTMLElement) {
+    private create_btn(insert_name: HTMLElement) {
         let btn = document.createElement('button');
         btn.id = 'resize_btn';
         btn.textContent = 'Resize';
@@ -212,7 +221,12 @@ class Resizer {
         document.querySelector('#resize_btn')?.addEventListener('click', () => {
             let element_width = resize_element.getBoundingClientRect().width;
             this.px2mm = element_width / this.init_width;
-            this.start_blindspot_task();
+            this.calculated_dpi = this.px2mm / 0.03937;
+            if (this.use_perceived_distance) {
+                this.start_blindspot_task();
+            } else {
+                this.end_resizing_task();
+            }
         });
     }
 
@@ -349,26 +363,35 @@ class Resizer {
         const ball_square_distance = (this.blindspot_data['square_pos'] - avg) / this.px2mm;
 
         this.view_distance = ball_square_distance / Math.tan((angle * Math.PI) / 180); // calculate view distance
-        this.scale_factor = this.view_distance / this.developed_distance; // calculate scaling factor
+        this.scale_factor = this.view_distance / this.development_distance; // calculate scaling factor
         this.remove_root_event_listeners();
+        this.end_resizing_task();
+    }
+
+    end_resizing_task() {
         let div = document.querySelector<HTMLElement>('#content');
         if (!div) { // check if the test div exists
             throw new Error('Test div not found');
         }
         div.style.display = 'none';
+
+        let new_width, new_height;
+        if (this.scale_factor == undefined) {
+            this.scale_factor = this.calculated_dpi / this.development_dpi; // calculate scaling factor
+        }
+        new_width = Math.round(this.runner._experiment.vars.get('width') * this.scale_factor); // calculate new width and height
+        new_height = Math.round(this.runner._experiment.vars.get('height') * this.scale_factor);
         
         let canvas = document.getElementsByTagName('canvas')[0];
-        let new_width = Math.round(this.runner._experiment.vars.get('width') * this.scale_factor); // calculate new width and height
-        let new_height = Math.round(this.runner._experiment.vars.get('height') * this.scale_factor);
-        // this.runner._experiment.vars.set('width', new_width); // set new width and height for the experiment
-        // this.runner._experiment.vars.set('height', new_height);
+        if (!canvas) { // check if the canvas exists
+            throw new Error('Canvas not found');
+        }
         canvas.style.width = `${new_width}px`; // set the canvas width and height
         canvas.style.height = `${new_height}px`;
-        // this.runner._renderer.resize(new_width, new_height); // resize the renderer
         canvas.style.display = 'inline-block';
         document.body.getElementsByTagName('main')[0].style.display = 'flex';
+
         this.runner._events._currentItem._complete = this._complete_function_cache;
-        this.runner._events._currentItem._complete();
     }
 
     /**
