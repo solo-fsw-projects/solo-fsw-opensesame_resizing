@@ -34,13 +34,15 @@ create_resize_element = (insert_name) => {
   let aspect_ratio = 85.6 / 53.98;
   let resize_element = document.createElement('div');
   resize_element.id = 'resize_element';
+  resize_element.className = 'resize_element';
   let start_div_height = 
       aspect_ratio < 1 ? 250 : Math.round(250 / aspect_ratio); // aspect ratio < 1 means width < height
   let start_div_width = 
       aspect_ratio < 1 ? Math.round(250 / aspect_ratio) : 250;
   var adjust_size = Math.round(start_div_width * 0.1);
   
-  resize_element.style.border = 'none';
+  resize_element.style.border = '1px solid black';
+  resize_element.style.borderRadius = '10px';
   resize_element.style.height = start_div_height + 'px';
   resize_element.style.width = start_div_width + 'px';
   resize_element.style.margin = '5px auto';
@@ -60,7 +62,6 @@ create_drag_element = (resize_element, adjust_size) => {
   drag_element.style.right = '0';
   drag_element.style.width = adjust_size + 'px';
   drag_element.style.height = adjust_size + 'px';
-  drag_element.style.border = '1px solid red';
   drag_element.style.backgroundColor = 'none';
   drag_element.style.borderLeft = '0';
   drag_element.style.borderTop = '0';
@@ -111,7 +112,10 @@ resize_object = () => {
           resize_element.style.width = new_width + 'px';
           resize_element.style.height = Math.round(new_height / aspect_ratio) + 'px';
           let element_width = resize_element.getBoundingClientRect().width;
-          px2mm = element_width / 85.6;
+          let px2mm_width = element_width / 85.6;
+          let element_height = resize_element.getBoundingClientRect().height;
+          let px2mm_height = element_height / 53.98;
+          px2mm = (px2mm_width + px2mm_height) / 2;
           calculated_dpi = px2mm / 0.03937;
           dpi_text.innerText = `DPI: ${calculated_dpi.toFixed(2)}`;
       }

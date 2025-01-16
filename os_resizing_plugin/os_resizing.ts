@@ -44,7 +44,7 @@ class Resizer {
     aspect_ratio: number;
     px2mm: number;
     calculated_dpi: number;
-    runner: any;
+    runner: any; // TODO: add variables to runner vars
     view_distance: number;
     development_dpi: number;
     development_distance: number;

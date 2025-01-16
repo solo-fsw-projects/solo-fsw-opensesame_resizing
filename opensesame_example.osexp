@@ -1,7 +1,7 @@
 ---
 API: 3
 OpenSesame: 4.0.24
-Platform: posix
+Platform: nt
 ---
 set width 1024
 set title "New experiment"
@@ -26,7 +26,7 @@ set font_size 18
 set font_italic False
 set font_family mono
 set font_bold False
-set experiment_path "/Users/coenwerre/Desktop/solo-fsw-opensesame_resizing"
+set experiment_path "C:/Users/werrecpd1/OneDrive - Universiteit Leiden/Desktop/solo-fsw-opensesame_resizing"
 set disable_garbage_collection True
 set description "The main experiment item"
 set color_backend osweb
@@ -61,12 +61,7 @@ define notepad getting_started
 define inline_javascript new_1_inline_javascript
 	set description "Executes Python code"
 	___run__
-	var test = new Resizer(runner);
-	//let current_width = width;
-	//let current_height = height;
-	//let scale_factor = Math.round(440 / test.view_distance, 2);
-	//height = height*scale_factor;
-	//width = width*scale_factor;
+	var test = new Resizer(runner, false, 100.11, 440);
 	__end__
 	set _prepare ""
 
