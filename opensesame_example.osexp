@@ -60,9 +60,7 @@ define notepad getting_started
 
 define inline_javascript new_1_inline_javascript
 	set description "Executes Python code"
-	___run__
-	var test = new Resizer(runner, false, 100.11, 440);
-	__end__
+	set _run "var test = new Resizer(runner, false, 100.11, 440);"
 	set _prepare ""
 
 define sketchpad new_1_sketchpad
