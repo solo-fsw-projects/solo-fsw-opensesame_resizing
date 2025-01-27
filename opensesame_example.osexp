@@ -27,7 +27,7 @@ set font_italic False
 set font_family mono
 set font_bold False
 set experiment_path "C:/Users/werrecpd1/OneDrive - Universiteit Leiden/Desktop/solo-fsw-opensesame_resizing"
-set disable_garbage_collection True
+set disable_garbage_collection False
 set description "The main experiment item"
 set color_backend osweb
 set clock_backend osweb
@@ -39,9 +39,10 @@ define sequence experiment
 	set description "Runs a number of items in sequence"
 	run getting_started True
 	run new_inline_javascript True
-	run new_1_inline_javascript True
 	run welcome True
+	run new_1_inline_javascript True
 	run new_2_sketchpad True
+	run new_4_sketchpad True
 	run new_loop True
 
 define notepad getting_started
@@ -60,7 +61,7 @@ define notepad getting_started
 
 define inline_javascript new_1_inline_javascript
 	set description "Executes Python code"
-	set _run "var test = new Resizer(runner, false, 100.11, 440);"
+	set _run "var test = new Resizer(true, runner, true, 100.11, 440);"
 	set _prepare ""
 
 define sketchpad new_1_sketchpad
@@ -77,6 +78,10 @@ define sketchpad new_3_sketchpad
 	set duration keypress
 	set description "Displays stimuli"
 	draw rect color=white fill=1 h=100 penwidth=1 show_if=True w=100 x=-50 y=-50 z_index=0
+
+define sketchpad new_4_sketchpad
+	set duration keypress
+	set description "Displays stimuli"
 
 define form_text_display new_form_text_display
 	set timeout infinite
@@ -100,8 +105,8 @@ define inline_javascript new_inline_javascript
 	set _run ""
 	___prepare__
 	var script = document.createElement('script');
-	//script.src = "https://solo-fsw-projects.github.io/solo-fsw-opensesame_resizing/os_resizing_plugin/os_resizing.js";
-	script.src = "http://127.0.0.1:5500/os_resizing_plugin/os_resizing.js";
+	script.src = "https://solo-fsw-projects.github.io/solo-fsw-opensesame_resizing/os_resizing_plugin/os_resizing.js";
+	//script.src = "http://127.0.0.1:5500/os_resizing_plugin/os_resizing.js";
 	document.head.appendChild(script);
 	__end__
 

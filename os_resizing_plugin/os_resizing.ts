@@ -22,6 +22,7 @@ class Resizer {
     development_dpi: number;
     development_distance: number;
     scale_factor: number;
+    armed: boolean = false;
     use_perceived_distance: boolean;
 
     constructor(osweb: boolean, runner: any, use_perceived_distance: boolean, development_dpi: number, development_distance: number) {
@@ -35,26 +36,35 @@ class Resizer {
         this.use_perceived_distance = use_perceived_distance;
         this.runner = runner;
         this.osweb_main();
+        this.runner._events._currentItem._complete();
     }
 
     private static_page_main() {
+        this.cache_runner();
         const content_wrapper = this.create_content_wrapper();
         this.content_div(content_wrapper);
         this.resize_object(true);
     }
 
     private osweb_main() {
-        this.circumvent_osweb();
+        this.cache_runner();
+        document.body.getElementsByTagName('main')[0].style.display = 'none';
         const content_wrapper = this.create_content_wrapper();
         this.content_div(content_wrapper);
         this.resize_object(false);
         this.get_keyboard_response = this.get_keyboard_response.bind(this);
     }
 
-    private circumvent_osweb() {
-        document.body.getElementsByTagName('main')[0].style.display = 'none';
+    private cache_runner() {
         this._complete_function_cache = this.runner._events._currentItem._complete; // cache the complete function
-        this.runner._events._currentItem._complete = () => { };
+        this.runner._events._currentItem._complete = () => { 
+            if (this.armed) {
+                this.armed = false;
+                debugger;
+                this.runner._events._currentItem._complete = this._complete_function_cache;
+                this.runner._events._currentItem._complete();
+            }
+        };
     }
 
     create_content_wrapper() {
@@ -158,14 +168,13 @@ class Resizer {
         }
     }
 
-    resize_object(static_page: boolean) { // TODO: add variable to make static page possible without blindspot task
+    resize_object(static_page: boolean) {
         let dragging = false;
         const resize_element = document.querySelector<HTMLElement>('#resize_element');
         if (!resize_element) {
             throw new Error('Resize element not found');
         };
 
-        const original_height = parseInt(resize_element.style.height);
         const original_width = parseInt(resize_element.style.width);
         let origin_x;
         let dpi_text;
@@ -209,11 +218,13 @@ class Resizer {
         });
 
 
-        document.querySelector('#resize_btn')?.addEventListener('click', () => {
+        document.querySelector('#resize_btn')?.addEventListener('click', (e) => {
+            e.preventDefault();
             let element_width = resize_element.getBoundingClientRect().width;
             this.px2mm = element_width / this.init_width;
             this.calculated_dpi = this.px2mm / 0.03937;
             if (this.use_perceived_distance) {
+                debugger;
                 this.start_blindspot_task();
             } else {
                 this.end_resizing_task();
@@ -279,6 +290,7 @@ class Resizer {
     ): void {
         const start_time = performance.now();
         const listener = (e) => {
+            e.preventDefault();
             if (this.check_valid_response(valid_responses, allow_held_keys, e.key)) {
                 const rt = performance.now() - start_time;
                 if (rt < minimum_rt) {
@@ -333,36 +345,36 @@ class Resizer {
         this.blindspot_data.avg_ball_pos = avg;
         const ball_square_distance = (this.blindspot_data['square_pos'] - avg) / this.px2mm;
 
-        this.view_distance = ball_square_distance / Math.tan((angle * Math.PI) / 180); // calculate view distance
-        this.scale_factor = this.view_distance / this.development_distance; // calculate scaling factor
+        this.view_distance = ball_square_distance / Math.tan((angle * Math.PI) / 180);
+        this.scale_factor = this.view_distance / this.development_distance;
         this.remove_root_event_listeners();
         this.end_resizing_task();
     }
 
     end_resizing_task() {
         let div = document.querySelector<HTMLElement>('#content');
-        if (!div) { // check if the test div exists
+        if (!div) { 
             throw new Error('Test div not found');
         }
         div.style.display = 'none';
 
         let new_width, new_height;
         if (this.scale_factor == undefined) {
-            this.scale_factor = this.calculated_dpi / this.development_dpi; // calculate scaling factor
+            this.scale_factor = this.calculated_dpi / this.development_dpi;
         }
-        new_width = Math.round(this.runner._experiment.vars.get('width') * this.scale_factor); // calculate new width and height
+        new_width = Math.round(this.runner._experiment.vars.get('width') * this.scale_factor); 
         new_height = Math.round(this.runner._experiment.vars.get('height') * this.scale_factor);
+        // this.runner._events._currentItem._complete = this._complete_function_cache;
         
         let canvas = document.getElementsByTagName('canvas')[0];
-        if (!canvas) { // check if the canvas exists
+        if (!canvas) {
             throw new Error('Canvas not found');
         }
-        canvas.style.width = `${new_width}px`; // set the canvas width and height
+        canvas.style.width = `${new_width}px`;
         canvas.style.height = `${new_height}px`;
-        canvas.style.display = 'inline-block';
         document.body.getElementsByTagName('main')[0].style.display = 'flex';
-
-        this.runner._events._currentItem._complete = this._complete_function_cache;
+        this.armed = true;
+        this.runner._events._currentItem._complete();
     }
 
     reset_ball_wait_for_start() {

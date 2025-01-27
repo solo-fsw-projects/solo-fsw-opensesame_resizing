@@ -20,6 +20,7 @@ var Resizer = /** @class */ (function () {
             avg_ball_pos: 0,
             square_pos: 0,
         };
+        this.armed = false;
         if (!osweb) {
             this.static_page_main();
             return;
@@ -29,23 +30,33 @@ var Resizer = /** @class */ (function () {
         this.use_perceived_distance = use_perceived_distance;
         this.runner = runner;
         this.osweb_main();
+        this.runner._events._currentItem._complete();
     }
     Resizer.prototype.static_page_main = function () {
+        this.cache_runner();
         var content_wrapper = this.create_content_wrapper();
         this.content_div(content_wrapper);
         this.resize_object(true);
     };
     Resizer.prototype.osweb_main = function () {
-        this.circumvent_osweb();
+        this.cache_runner();
+        document.body.getElementsByTagName('main')[0].style.display = 'none';
         var content_wrapper = this.create_content_wrapper();
         this.content_div(content_wrapper);
         this.resize_object(false);
         this.get_keyboard_response = this.get_keyboard_response.bind(this);
     };
-    Resizer.prototype.circumvent_osweb = function () {
-        document.body.getElementsByTagName('main')[0].style.display = 'none';
+    Resizer.prototype.cache_runner = function () {
+        var _this = this;
         this._complete_function_cache = this.runner._events._currentItem._complete; // cache the complete function
-        this.runner._events._currentItem._complete = function () { };
+        this.runner._events._currentItem._complete = function () {
+            if (_this.armed) {
+                _this.armed = false;
+                debugger;
+                _this.runner._events._currentItem._complete = _this._complete_function_cache;
+                _this.runner._events._currentItem._complete();
+            }
+        };
     };
     Resizer.prototype.create_content_wrapper = function () {
         var content_wrapper = document.createElement('div');
@@ -140,7 +151,6 @@ var Resizer = /** @class */ (function () {
             throw new Error('Resize element not found');
         }
         ;
-        var original_height = parseInt(resize_element.style.height);
         var original_width = parseInt(resize_element.style.width);
         var origin_x;
         var dpi_text;
@@ -175,11 +185,13 @@ var Resizer = /** @class */ (function () {
                 dpi_text.innerText = "DPI: ".concat(calculated_dpi.toFixed(2));
             }
         });
-        (_b = document.querySelector('#resize_btn')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', function () {
+        (_b = document.querySelector('#resize_btn')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', function (e) {
+            e.preventDefault();
             var element_width = resize_element.getBoundingClientRect().width;
             _this.px2mm = element_width / _this.init_width;
             _this.calculated_dpi = _this.px2mm / 0.03937;
             if (_this.use_perceived_distance) {
+                debugger;
                 _this.start_blindspot_task();
             }
             else {
@@ -212,6 +224,7 @@ var Resizer = /** @class */ (function () {
         var _this = this;
         var start_time = performance.now();
         var listener = function (e) {
+            e.preventDefault();
             if (_this.check_valid_response(valid_responses, allow_held_keys, e.key)) {
                 var rt = performance.now() - start_time;
                 if (rt < minimum_rt) {
@@ -251,32 +264,33 @@ var Resizer = /** @class */ (function () {
         var avg = this.accurate_round(sum / this.blindspot_data.ball_pos.length, 2);
         this.blindspot_data.avg_ball_pos = avg;
         var ball_square_distance = (this.blindspot_data['square_pos'] - avg) / this.px2mm;
-        this.view_distance = ball_square_distance / Math.tan((angle * Math.PI) / 180); // calculate view distance
-        this.scale_factor = this.view_distance / this.development_distance; // calculate scaling factor
+        this.view_distance = ball_square_distance / Math.tan((angle * Math.PI) / 180);
+        this.scale_factor = this.view_distance / this.development_distance;
         this.remove_root_event_listeners();
         this.end_resizing_task();
     };
     Resizer.prototype.end_resizing_task = function () {
         var div = document.querySelector('#content');
-        if (!div) { // check if the test div exists
+        if (!div) {
             throw new Error('Test div not found');
         }
         div.style.display = 'none';
         var new_width, new_height;
         if (this.scale_factor == undefined) {
-            this.scale_factor = this.calculated_dpi / this.development_dpi; // calculate scaling factor
+            this.scale_factor = this.calculated_dpi / this.development_dpi;
         }
-        new_width = Math.round(this.runner._experiment.vars.get('width') * this.scale_factor); // calculate new width and height
+        new_width = Math.round(this.runner._experiment.vars.get('width') * this.scale_factor);
         new_height = Math.round(this.runner._experiment.vars.get('height') * this.scale_factor);
+        // this.runner._events._currentItem._complete = this._complete_function_cache;
         var canvas = document.getElementsByTagName('canvas')[0];
-        if (!canvas) { // check if the canvas exists
+        if (!canvas) {
             throw new Error('Canvas not found');
         }
-        canvas.style.width = "".concat(new_width, "px"); // set the canvas width and height
+        canvas.style.width = "".concat(new_width, "px");
         canvas.style.height = "".concat(new_height, "px");
-        canvas.style.display = 'inline-block';
         document.body.getElementsByTagName('main')[0].style.display = 'flex';
-        this.runner._events._currentItem._complete = this._complete_function_cache;
+        this.armed = true;
+        this.runner._events._currentItem._complete();
     };
     Resizer.prototype.reset_ball_wait_for_start = function () {
         var rectX = this.container.getBoundingClientRect().width - 30;
