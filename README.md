@@ -1,15 +1,9 @@
 # Resizing script for OSWeb
 This repository contains the source code (*os_resizing.ts*) for the *os_resizing.js* script that resizes the canvases in OSWeb for consistent visual angles across participants. This ensures more accurate and trustworthy results and is based on the jspsych[^1] implementation of the virtual chinrest[^2].
 
-# Table of contents
-1. [Introduction](#resizing-script-for-osweb)
-2. [Importing](#importing)
-3. [How to use](#howto)
-    1. [Initialization](#initialization)
-    2. [Determining DPI](#determining-dpi)
-    3. [Determining Distance to screen during development](#determining-distance-to-screen-during-development)
-    4. [Hiccups](#current-hiccups)
-4. [References](#references)
+[[TOC]]
+
+## Definitions
 
 
 ## Importing
