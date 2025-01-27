@@ -69,7 +69,6 @@ resize_object = () => {
 
   let dpi_text = document.createElement('div');
   dpi_text.id = 'dpi_text';
-
   dpi_text.style.marginTop = '10px';
   dpi_text.innerText = `DPI: ${calculated_dpi.toFixed(2)}`;
   document.body.appendChild(dpi_text);

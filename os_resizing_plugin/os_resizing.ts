@@ -38,13 +38,15 @@ class Resizer {
     }
 
     private static_page_main() {
-
+        const content_wrapper = this.create_content_wrapper();
+        this.content_div(content_wrapper);
+        this.resize_object(true);
     }
 
     private osweb_main() {
         const content_wrapper = this.create_content_wrapper();
         this.content_div(content_wrapper);
-        this.resize_object();
+        this.resize_object(false);
         this.get_keyboard_response = this.get_keyboard_response.bind(this);
     }
 
@@ -151,7 +153,7 @@ class Resizer {
         }
     }
 
-    resize_object() { // TODO: add variable to make static page possible without blindspot task
+    resize_object(static_page: boolean) { // TODO: add variable to make static page possible without blindspot task
         this._complete_function_cache = this.runner._events._currentItem._complete; // cache the complete function
         this.runner._events._currentItem._complete = () => {}; // override the complete function
         let dragging = false;
@@ -162,7 +164,9 @@ class Resizer {
 
         const original_height = parseInt(resize_element.style.height);
         const original_width = parseInt(resize_element.style.width);
-        let origin_x, origin_y;
+        let origin_x;
+        let dpi_text;
+        let calculated_dpi = 0;
 
         document.addEventListener('mouseup', () => {
             dragging = false;
@@ -172,21 +176,35 @@ class Resizer {
             e.preventDefault();
             dragging = true;
             origin_x = e.pageX;
-            origin_y = e.pageY;
         }
 
         document.querySelector('#drag_element')?.addEventListener('mousedown', mouse_down_event);
 
+        if (static_page) {
+            dpi_text = document.createElement('div');
+            dpi_text.id = 'dpi_text';
+            dpi_text.style.marginTop = '10px';
+            dpi_text.innerText = `DPI: ${calculated_dpi.toFixed(2)}`;
+            document.body.appendChild(dpi_text);
+        }
+
         document.addEventListener('mousemove', (e) => {
-            if (dragging) {
-                let dx = e.pageX - origin_x;
-                let dy = e.pageY - origin_y;
-                let new_width = original_width + dx;
-                let new_height = original_height + dy;
-                resize_element.style.width = new_width + 'px';
-                resize_element.style.height = Math.round(new_height / this.aspect_ratio) + 'px';
+            e.preventDefault();
+            if (!dragging) {
+                return;
             }
+
+            let dx = e.pageX - origin_x;
+            let new_width = original_width + dx;
+            resize_element.style.width = new_width + 'px';
+            resize_element.style.height = Math.round(new_width / this.aspect_ratio) + 'px';
+
+            if (static_page) {
+                calculated_dpi = new_width / this.init_width / 0.03937;
+                dpi_text.innerText = `DPI: ${calculated_dpi.toFixed(2)}`;
+            }            
         });
+
 
         document.querySelector('#resize_btn')?.addEventListener('click', () => {
             let element_width = resize_element.getBoundingClientRect().width;
