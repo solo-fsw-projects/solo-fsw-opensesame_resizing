@@ -36,10 +36,16 @@ var Resizer = /** @class */ (function () {
         this.resize_object(true);
     };
     Resizer.prototype.osweb_main = function () {
+        this.circumvent_osweb();
         var content_wrapper = this.create_content_wrapper();
         this.content_div(content_wrapper);
         this.resize_object(false);
         this.get_keyboard_response = this.get_keyboard_response.bind(this);
+    };
+    Resizer.prototype.circumvent_osweb = function () {
+        document.body.getElementsByTagName('main')[0].style.display = 'none';
+        this._complete_function_cache = this.runner._events._currentItem._complete; // cache the complete function
+        this.runner._events._currentItem._complete = function () { };
     };
     Resizer.prototype.create_content_wrapper = function () {
         var content_wrapper = document.createElement('div');
@@ -59,7 +65,6 @@ var Resizer = /** @class */ (function () {
         }
     };
     Resizer.prototype.content_div = function (content_wrapper) {
-        document.body.getElementsByTagName('main')[0].style.display = 'none';
         var content = document.createElement('div');
         content.id = 'content';
         content.style.textAlign = 'center';
@@ -129,8 +134,6 @@ var Resizer = /** @class */ (function () {
     Resizer.prototype.resize_object = function (static_page) {
         var _this = this;
         var _a, _b;
-        this._complete_function_cache = this.runner._events._currentItem._complete; // cache the complete function
-        this.runner._events._currentItem._complete = function () { }; // override the complete function
         var dragging = false;
         var resize_element = document.querySelector('#resize_element');
         if (!resize_element) {

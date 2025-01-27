@@ -44,10 +44,17 @@ class Resizer {
     }
 
     private osweb_main() {
+        this.circumvent_osweb();
         const content_wrapper = this.create_content_wrapper();
         this.content_div(content_wrapper);
         this.resize_object(false);
         this.get_keyboard_response = this.get_keyboard_response.bind(this);
+    }
+
+    private circumvent_osweb() {
+        document.body.getElementsByTagName('main')[0].style.display = 'none';
+        this._complete_function_cache = this.runner._events._currentItem._complete; // cache the complete function
+        this.runner._events._currentItem._complete = () => { };
     }
 
     create_content_wrapper() {
@@ -71,8 +78,6 @@ class Resizer {
     }
 
     private content_div(content_wrapper: HTMLElement): void {
-        document.body.getElementsByTagName('main')[0].style.display = 'none';
-
         let content = document.createElement('div');
         content.id = 'content';
         content.style.textAlign = 'center';
@@ -154,8 +159,6 @@ class Resizer {
     }
 
     resize_object(static_page: boolean) { // TODO: add variable to make static page possible without blindspot task
-        this._complete_function_cache = this.runner._events._currentItem._complete; // cache the complete function
-        this.runner._events._currentItem._complete = () => {}; // override the complete function
         let dragging = false;
         const resize_element = document.querySelector<HTMLElement>('#resize_element');
         if (!resize_element) {

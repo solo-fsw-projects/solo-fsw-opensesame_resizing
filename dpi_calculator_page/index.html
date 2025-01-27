@@ -4,7 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DPI Calculator</title>
-  <script src="dpi_calculator.js" defer></script>
+  <script src="../os_resizing_plugin/os_resizing.js"></script>
+  <script>
+    window.onload = function() {
+      let dpi = new Resizer(false);
+    };
+  </script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
