@@ -13,6 +13,11 @@ This repository contains the source code (*os_resizing.ts*) for the *os_resizing
 5. [References](#references)
 
 ## Definitions
+- Visual angle: 
+- Nominal size: 
+- True size:
+- Perceived size:
+- DPI:
 
 
 ## Importing
