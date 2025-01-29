@@ -1,7 +1,8 @@
 # Resizing script for OSWeb
+## Introduction
 This repository contains the source code (*os_resizing.ts*) for the *os_resizing.js* script that resizes the canvases in OSWeb for consistent visual angles across participants. This ensures more accurate and trustworthy results and is based on the jspsych[^1] implementation of the virtual chinrest[^2].
 
-# Table of contents
+## Table of contents
 1. [Introduction](#resizing-script-for-osweb)
 2. [Definitions](#definitions)
 3. [Importing](#importing)
@@ -9,15 +10,16 @@ This repository contains the source code (*os_resizing.ts*) for the *os_resizing
     1. [Initialization](#initialization)
     2. [Determining DPI](#determining-dpi)
     3. [Determining Distance to screen during development](#determining-distance-to-screen-during-development)
-    4. [Hiccups](#current-hiccups)
+    4. [Designing the experiment](#designing-the-experiment)
+    5. [Hiccups](#current-hiccups)
 5. [References](#references)
 
 ## Definitions
-- Visual angle: 
+- Visual angle: The angle a viewed object subtends at the eye. Also referred to as an objects angular size.
 - Nominal size: 
-- True size:
-- Perceived size:
-- DPI:
+- True size: The size of an object in real world millimeters.
+- Perceived size: The size of an object as it's perceived over a certain distance.
+- DPI: A measure of dot density, the number of individual dots that can be placed in a line of one inch. It 
 
 
 ## Importing
@@ -48,12 +50,25 @@ The variables with * need to be altered to their respective types. The runner va
 - dpi: Number (any real number). Dpi of the screen that the experiment was developed on
 - distance_to_screen: Number. The distance to the screen the experiment is built around. This is needed to ensure an equal visual angle over all distances.
 
+The reason for the first variable is to make the dpi calculating static page (see [Determining DPI](#determining-dpi)). The *use_perceived_distance* variable set to true if the program needs to rescale the OSWeb canvas to make the visual angles matching across different distances on different screens.
+If set to false, the program will simply rescale the canvas to make the true size matching on both screens. The reason this is possible is because of the DPI determining credit card resizing task. This task determines the DPI difference between the screen the program is being run on, and the screen it was developed on. Hence, determining the DPI is mandatory for good results.
+The determined DPI can be passed to the program through the *dpi* variable. With the DPI of both screens, the true size of an object will match for both screens (if a graphic is 5cm wide on one screen, it will also be 5cm on another screen, assuming the test is conducted properly.)
+The *distance_to_screen* variable is used to get a measure of the intended distance for the experiment. This is needed to calculate the proper scaling factor for the visual angle, so the perceived distance matches across different monitors and distances.
+
 #### Determining DPI
 To make it easier to determine the DPI, we created a static page where you can check the dpi of your screen using a credit card. It can be found here:
 https://solo-fsw-projects.github.io/solo-fsw-opensesame_resizing/
 
 #### Determining distance to screen during development
 The easiest solution here is to use a chinrest and measuring tape. This will ensure that the distance to the screen stays consistent during the creation of the experiment. If neither are available, an educated guess will do but this will also reduce the accuracy of the program.
+
+### Designing the experiment
+To ensure consistency, it is nice to design the experiment with true size in mind. This means that while creating objects in a sketchpad, the height and width should be decided beforehand. This is done so you can verify the size is equal on all screens.
+If the objects are not designed with true size in mind the performance of the program will not be inhibited, as the visual angle, true and perceived sizes will remain the same, the information for what size the objects of interest are will simply be missing. 
+
+Like described in [Current Hiccups](#current-hiccups), when implementing the resizer, bear in mind whether or not you want to use perceived size or true size.
+When using the perceived size make sure there is a sketchpad item with the '*keypress*' duration after the inline javascript block that can be skipped (it can be empty).
+Doing this will ensure no important parts of the experiment are missed. If you decide to use the true size (*use_perceived_distance* set to false), this is not needed as the program will simply start the next block in the experiment.
 
 #### Current Hiccups
 As of right now, the functionality is all in place. There is however a slight issue when you do decide to use the perceived distance functionality. This makes the program skip over the next item in the OpenSesame experiment, rather than moving to that item. We are currently working hard on diagnosing what's causing this and fixing it.
