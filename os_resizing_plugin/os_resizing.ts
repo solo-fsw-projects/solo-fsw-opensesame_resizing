@@ -40,7 +40,7 @@ class Resizer {
     }
 
     private static_page_main() {
-        this.cache_runner();
+        // this.cache_runner();
         const content_wrapper = this.create_content_wrapper();
         this.content_div(content_wrapper);
         this.resize_object(true);
