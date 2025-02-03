@@ -42,7 +42,8 @@ var Resizer = /** @class */ (function () {
         this.cache_runner();
         document.body.getElementsByTagName('main')[0].style.display = 'none';
         var content_wrapper = this.create_content_wrapper();
-        this.content_div(content_wrapper);
+        var box = this.content_div(content_wrapper);
+        this.create_btn(box);
         this.resize_object(false);
         this.get_keyboard_response = this.get_keyboard_response.bind(this);
     };
@@ -84,10 +85,14 @@ var Resizer = /** @class */ (function () {
         boundary_box.id = 'boundary_box';
         boundary_box.style.width = '900px';
         boundary_box.style.margin = '0 auto';
+        var instructions = document.createElement('p');
+        instructions.textContent = 'Please hold a credit card up to the screen and resize the box below to match the size of the credit card. This will help us calculate the accurate DPI for your display.';
+        instructions.style.marginBottom = '20px';
+        content_wrapper.appendChild(instructions);
         this.create_resize_element(boundary_box);
-        this.create_btn(boundary_box);
         content.appendChild(boundary_box);
         content_wrapper.appendChild(content);
+        return boundary_box;
     };
     Resizer.prototype.create_resize_element = function (boundary_box) {
         this.aspect_ratio = this.init_width / this.init_height;
@@ -265,7 +270,7 @@ var Resizer = /** @class */ (function () {
         this.blindspot_data.avg_ball_pos = avg;
         var ball_square_distance = (this.blindspot_data['square_pos'] - avg) / this.px2mm;
         this.view_distance = ball_square_distance / Math.tan((angle * Math.PI) / 180);
-        this.scale_factor = this.view_distance / this.development_distance;
+        this.scaling_factor = this.view_distance / this.development_distance;
         this.remove_root_event_listeners();
         this.end_resizing_task();
     };
@@ -276,11 +281,11 @@ var Resizer = /** @class */ (function () {
         }
         div.style.display = 'none';
         var new_width, new_height;
-        if (this.scale_factor == undefined) {
-            this.scale_factor = this.calculated_dpi / this.development_dpi;
+        if (this.scaling_factor == undefined) {
+            this.scaling_factor = this.calculated_dpi / this.development_dpi;
         }
-        new_width = Math.round(this.runner._experiment.vars.get('width') * this.scale_factor);
-        new_height = Math.round(this.runner._experiment.vars.get('height') * this.scale_factor);
+        new_width = Math.round(this.runner._experiment.vars.get('width') * this.scaling_factor);
+        new_height = Math.round(this.runner._experiment.vars.get('height') * this.scaling_factor);
         // this.runner._events._currentItem._complete = this._complete_function_cache;
         var canvas = document.getElementsByTagName('canvas')[0];
         if (!canvas) {
