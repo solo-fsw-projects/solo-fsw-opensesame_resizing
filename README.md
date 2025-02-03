@@ -87,7 +87,8 @@ These variables can be accessed by typing in the object name (in our case `resiz
 ```
 let scaling_factor = resizer.scaling_factor;
 ```
-
+## Example
+In this repository, there is an example experiment added that demonstrates the workings of the `Resizer` class. This example shows how to import the class, how to initialize it with some arbitrary numbers and demonstrates the setup of the overall experiment. Run it a few times to get a feel for what the participants will experience.
 
 ## References
 [^1]: de Leeuw, J.R., Gilbert, R.A., & Luchterhandt, B. (2023). jsPsych: Enabling an open-source collaborative ecosystem of behavioral experiments. Journal of Open Source Software, 8(85), 5351, https://joss.theoj.org/papers/10.21105/joss.05351.
