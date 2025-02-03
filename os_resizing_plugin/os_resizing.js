@@ -33,7 +33,6 @@ var Resizer = /** @class */ (function () {
         this.runner._events._currentItem._complete();
     }
     Resizer.prototype.static_page_main = function () {
-        // this.cache_runner();
         var content_wrapper = this.create_content_wrapper();
         this.content_div(content_wrapper);
         this.resize_object(true);
