@@ -214,12 +214,15 @@ class Resizer {
 
             let dx = e.pageX - origin_x;
             let new_width = original_width + dx;
+            let new_height = Math.round(new_width / this.aspect_ratio);
             resize_element.style.width = new_width + 'px';
-            resize_element.style.height = Math.round(new_width / this.aspect_ratio) + 'px';
+            resize_element.style.height = new_height + 'px';
 
             if (static_page) {
-                calculated_dpi = new_width / this.init_width / 0.03937;
-                dpi_text.innerText = `DPI: ${calculated_dpi.toFixed(2)}`;
+                let calculated_dpi_width = new_width / this.init_width / 0.03937;
+                let calculated_dpi_height = new_height / this.init_height / 0.03937;
+                calculated_dpi = (calculated_dpi_width + calculated_dpi_height) / 2;
+                dpi_text.innerText = `DPI: ${calculated_dpi}`;
             }            
         });
 
@@ -242,6 +245,11 @@ class Resizer {
         let div = document.querySelector<HTMLElement>('#boundary_box');
         if (!div) {
             throw new Error('Test div not found');
+        }
+
+        const instructions = document.querySelector('#content-wrapper p');
+        if (instructions) {
+            instructions.remove();
         }
         
         let blindspot_content =  `

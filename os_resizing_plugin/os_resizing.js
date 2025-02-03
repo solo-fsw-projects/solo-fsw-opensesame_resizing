@@ -183,11 +183,14 @@ var Resizer = /** @class */ (function () {
             }
             var dx = e.pageX - origin_x;
             var new_width = original_width + dx;
+            var new_height = Math.round(new_width / _this.aspect_ratio);
             resize_element.style.width = new_width + 'px';
-            resize_element.style.height = Math.round(new_width / _this.aspect_ratio) + 'px';
+            resize_element.style.height = new_height + 'px';
             if (static_page) {
-                calculated_dpi = new_width / _this.init_width / 0.03937;
-                dpi_text.innerText = "DPI: ".concat(calculated_dpi.toFixed(2));
+                var calculated_dpi_width = new_width / _this.init_width / 0.03937;
+                var calculated_dpi_height = new_height / _this.init_height / 0.03937;
+                calculated_dpi = (calculated_dpi_width + calculated_dpi_height) / 2;
+                dpi_text.innerText = "DPI: ".concat(calculated_dpi);
             }
         });
         (_b = document.querySelector('#resize_btn')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', function (e) {
@@ -208,6 +211,10 @@ var Resizer = /** @class */ (function () {
         var div = document.querySelector('#boundary_box');
         if (!div) {
             throw new Error('Test div not found');
+        }
+        var instructions = document.querySelector('#content-wrapper p');
+        if (instructions) {
+            instructions.remove();
         }
         var blindspot_content = "\n            <div id=\"blind-spot\">\n                <p>Now we will quickly measure how far away you are sitting.</p>\n                <div style=\"text-align: left\">\n                    <ol>\n                        <li>Put your left hand on the <b>space bar</b>.</li>\n                        <li>Cover your right eye with your right hand.</li>\n                        <li>Using your left eye, focus on the black square. Keep your focus on the black square.</li>\n                        <li>The <span style=\"color: red; font-weight: bold;\">red ball</span> will disappear as it moves from right to left. Press the space bar as soon as the ball disappears.</li>\n                    </ol>\n                </div>\n                <p>Press the space bar when you are ready to begin.</p>\n                <div id=\"svgDiv\" style=\"height:100px; position:relative;\"></div>\n                    <button class=\"btn btn-primary\" id=\"proceed\" style=\"display:none;\"> +\n                       Yes +\n                    </button>\n                remaining measurements:\n                <div id=\"click\" style=\"display:inline; color: red\"> ".concat(this.reps_remaining, " </div>\n            </div>");
         div.innerHTML = blindspot_content;
