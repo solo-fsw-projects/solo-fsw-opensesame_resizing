@@ -21,6 +21,7 @@ var Resizer = /** @class */ (function () {
             square_pos: 0,
         };
         this.armed = false;
+        document.body.style.backgroundColor = runner._vars.background;
         if (!osweb) {
             this.static_page_main();
             return;
@@ -197,6 +198,10 @@ var Resizer = /** @class */ (function () {
             var element_width = resize_element.getBoundingClientRect().width;
             _this.px2mm = element_width / _this.init_width;
             _this.calculated_dpi = _this.px2mm / 0.03937;
+            var instructions = document.querySelector('#content-wrapper p');
+            if (instructions) {
+                instructions.remove();
+            }
             if (_this.use_perceived_distance) {
                 debugger;
                 _this.start_blindspot_task();
@@ -210,10 +215,6 @@ var Resizer = /** @class */ (function () {
         var div = document.querySelector('#boundary_box');
         if (!div) {
             throw new Error('Test div not found');
-        }
-        var instructions = document.querySelector('#content-wrapper p');
-        if (instructions) {
-            instructions.remove();
         }
         var blindspot_content = "\n            <div id=\"blind-spot\">\n                <p>Now we will quickly measure how far away you are sitting.</p>\n                <div style=\"text-align: left\">\n                    <ol>\n                        <li>Put your left hand on the <b>space bar</b>.</li>\n                        <li>Cover your right eye with your right hand.</li>\n                        <li>Using your left eye, focus on the black square. Keep your focus on the black square.</li>\n                        <li>The <span style=\"color: red; font-weight: bold;\">red ball</span> will disappear as it moves from right to left. Press the space bar as soon as the ball disappears.</li>\n                    </ol>\n                </div>\n                <p>Press the space bar when you are ready to begin.</p>\n                <div id=\"svgDiv\" style=\"height:100px; position:relative;\"></div>\n                    <button class=\"btn btn-primary\" id=\"proceed\" style=\"display:none;\"> +\n                       Yes +\n                    </button>\n                remaining measurements:\n                <div id=\"click\" style=\"display:inline; color: red\"> ".concat(this.reps_remaining, " </div>\n            </div>");
         div.innerHTML = blindspot_content;
