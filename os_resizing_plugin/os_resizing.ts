@@ -26,7 +26,6 @@ class Resizer {
     scaling_factor: number;
 
     constructor(osweb: boolean, runner: any, use_perceived_distance: boolean, development_dpi: number, development_distance: number) {
-        document.body.style.backgroundColor = runner._vars.background;
         if (!osweb) {
             this.static_page_main();
             return;

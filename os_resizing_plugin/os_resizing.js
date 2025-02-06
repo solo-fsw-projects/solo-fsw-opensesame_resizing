@@ -21,7 +21,6 @@ var Resizer = /** @class */ (function () {
             square_pos: 0,
         };
         this.armed = false;
-        document.body.style.backgroundColor = runner._vars.background;
         if (!osweb) {
             this.static_page_main();
             return;
