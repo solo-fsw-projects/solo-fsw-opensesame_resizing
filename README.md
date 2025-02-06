@@ -72,6 +72,8 @@ Like described in [Current Hiccups](#current-hiccups), when implementing the res
 When using the perceived size make sure there is a sketchpad item with the '*keypress*' duration after the inline javascript block that can be skipped (it can be empty).
 Doing this will ensure no important parts of the experiment are missed. If you decide to use the true size (*use_perceived_distance* set to false), this is not needed as the program will simply start the next block in the experiment.
 
+It's important to ensure that the resolution you set for the experiment also needs to be smaller than the resolution of the screen you are developing on (for example: if you are using a 1920x1080 screen, design the experiment using 1800x1012, which has the same aspect ratio but is smaller). Also make sure your screen's scaling is set to 100% (on windows pc's, under display settings), as this messes with the DPI scaling and can lead to inaccurate results on smaller screens as the pixel sizes no longer match. This is a feature that might be added in the future but for now requires more research.
+
 #### Current Hiccups
 As of right now, the functionality is all in place. There is however a slight issue when you do decide to use the perceived distance functionality. This makes the program skip over the next item in the OpenSesame experiment, rather than moving to that item. We are currently working hard on diagnosing what's causing this and fixing it.
 
