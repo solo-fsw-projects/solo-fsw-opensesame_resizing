@@ -231,6 +231,12 @@ class Resizer {
             let element_width = resize_element.getBoundingClientRect().width;
             this.px2mm = element_width / this.init_width;
             this.calculated_dpi = this.px2mm / 0.03937;
+
+            const instructions = document.querySelector('#content-wrapper p');
+            if (instructions) {
+                instructions.remove();
+            }
+
             if (this.use_perceived_distance) {
                 debugger;
                 this.start_blindspot_task();
@@ -244,11 +250,6 @@ class Resizer {
         let div = document.querySelector<HTMLElement>('#boundary_box');
         if (!div) {
             throw new Error('Test div not found');
-        }
-
-        const instructions = document.querySelector('#content-wrapper p');
-        if (instructions) {
-            instructions.remove();
         }
         
         let blindspot_content =  `
