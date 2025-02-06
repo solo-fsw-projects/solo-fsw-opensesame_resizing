@@ -375,6 +375,9 @@ class Resizer {
         let new_width, new_height;
         if (this.scaling_factor == undefined) {
             this.scaling_factor = this.calculated_dpi / this.development_dpi;
+            // scaling works well when going from high to low dpi, but not the other way around
+            // reversing does not work, need to find different way to find proper scaling.
+            // maybe use the pixel millimeter ratio to rescale the screen to real world sizes
         }
         new_width = Math.round(this.runner._experiment.vars.get('width') * this.scaling_factor); 
         new_height = Math.round(this.runner._experiment.vars.get('height') * this.scaling_factor);
