@@ -371,28 +371,21 @@ class Resizer {
             throw new Error('Test div not found');
         }
         div.style.display = 'none';
-
+        
         let canvas = document.getElementsByTagName('canvas')[0];
         if (!canvas) {
             throw new Error('Canvas not found');
         }
-
+        const canvas_aspect_ratio = canvas.width / canvas.height;
+        
         let new_width, new_height;
         if (this.scaling_factor == undefined) {
-            // this.scaling_factor = this.calculated_dpi / this.development_dpi;
-            // scaling works well when going from high to low dpi, but not the other way around
-            // reversing does not work, need to find different way to find proper scaling.
-            // maybe use the pixel millimeter ratio to rescale the screen to real world sizes
-
-            // const ctx = canvas.getContext('2d');
-            // if (!ctx) throw new Error('Canvas context not found');
             const device_pixel_ratio = window.devicePixelRatio || 1;
-            const screen_width_inches = screen.width / device_pixel_ratio;
-            const reference_screen_inches = 13.3;
+            
+            const pixel_width = Math.round(200 * this.calculated_dpi / 25.4);
 
-            this.scaling_factor = reference_screen_inches / screen_width_inches;
-            new_width = Math.round(this.runner._experiment.vars.get('width') * this.scaling_factor * device_pixel_ratio);
-            new_height = Math.round(this.runner._experiment.vars.get('height') * this.scaling_factor * device_pixel_ratio);
+            new_width = pixel_width;
+            new_height = (pixel_width / canvas_aspect_ratio);
         }
         else {
             new_width = Math.round(this.runner._experiment.vars.get('width') * this.scaling_factor); 
@@ -401,13 +394,11 @@ class Resizer {
         // this.runner._events._currentItem._complete = this._complete_function_cache;
         
         let squeeze = new_width / screen.availWidth;
-
+        
         if (new_height > screen.availHeight || new_width > screen.availWidth) {
             new_height = screen.availHeight;
-            new_width = new_height * this.aspect_ratio;
+            new_width = new_height * canvas_aspect_ratio;
         }
-        canvas.width = new_width;
-        canvas.height = new_height;
         canvas.style.width = `${new_width}px`;
         canvas.style.height = `${new_height}px`;
         document.body.getElementsByTagName('main')[0].style.display = 'flex';

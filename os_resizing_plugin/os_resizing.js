@@ -292,18 +292,11 @@ var Resizer = /** @class */ (function () {
         }
         var new_width, new_height;
         if (this.scaling_factor == undefined) {
-            // this.scaling_factor = this.calculated_dpi / this.development_dpi;
-            // scaling works well when going from high to low dpi, but not the other way around
-            // reversing does not work, need to find different way to find proper scaling.
-            // maybe use the pixel millimeter ratio to rescale the screen to real world sizes
-            // const ctx = canvas.getContext('2d');
-            // if (!ctx) throw new Error('Canvas context not found');
+            var canvas_aspect_ratio = canvas.width / canvas.height;
             var device_pixel_ratio = window.devicePixelRatio || 1;
-            var screen_width_inches = screen.width / device_pixel_ratio;
-            var reference_screen_inches = 13.3;
-            this.scaling_factor = reference_screen_inches / screen_width_inches;
-            new_width = Math.round(this.runner._experiment.vars.get('width') * this.scaling_factor * device_pixel_ratio);
-            new_height = Math.round(this.runner._experiment.vars.get('height') * this.scaling_factor * device_pixel_ratio);
+            var pixel_width = Math.round(200 * this.calculated_dpi / 25.4);
+            new_width = pixel_width;
+            new_height = (pixel_width / canvas_aspect_ratio);
         }
         else {
             new_width = Math.round(this.runner._experiment.vars.get('width') * this.scaling_factor);
@@ -315,8 +308,6 @@ var Resizer = /** @class */ (function () {
             new_height = screen.availHeight;
             new_width = new_height * this.aspect_ratio;
         }
-        canvas.width = new_width;
-        canvas.height = new_height;
         canvas.style.width = "".concat(new_width, "px");
         canvas.style.height = "".concat(new_height, "px");
         document.body.getElementsByTagName('main')[0].style.display = 'flex';
