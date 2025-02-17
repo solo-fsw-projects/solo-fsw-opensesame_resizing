@@ -20,7 +20,7 @@ This repository contains the source code (*os_resizing.ts*) for the *os_resizing
 - Nominal size: 
 - True size: The size of an object in real world millimeters.
 - Perceived size: The size of an object as it's perceived over a certain distance.
-- DPI: A measure of dot density, the number of individual dots that can be placed in a line of one inch. It 
+- DPI: A measure of dot density, the number of individual dots that can be placed in a line of one inch. It is used to bridge the gap between pixels and real world millimetres.
 
 ## Importing
 This package is supposed to be imported into OpenSesame directly, through the `OSWeb & JATOS control panel` (This currently only seems to function on MacOS). Under external libraries add the following:
