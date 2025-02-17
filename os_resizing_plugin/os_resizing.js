@@ -7,7 +7,22 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 };
+/**
+ * Resizer class for the OpenSesame web plugin.
+ *
+ * This class is responsible for managing the resizing task and the blindspot task.
+ * It provides methods to resize an object on the page and to perform a blindspot task
+ * to calculate the view distance and scaling factor.
+ */
 var Resizer = /** @class */ (function () {
+    /**
+     * Constructs an instance of the class.
+     *
+     * @param runner - The runner instance responsible for managing the execution.
+     * @param use_perceived_distance - A boolean indicating whether to use perceived distance.
+     * @param canvas_width_in_mm - The width of the canvas in millimeters.
+     * @param development_distance - The development distance parameter.
+     */
     function Resizer(runner, use_perceived_distance, canvas_width_in_mm, development_distance) {
         this.init_height = 53.98;
         this.init_width = 85.6;
@@ -29,6 +44,20 @@ var Resizer = /** @class */ (function () {
         this.osweb_main();
         this.runner._events._currentItem._complete();
     }
+    /**
+     * Main function to initialize and manage the OpenSesame web plugin.
+     *
+     * This function performs the following tasks:
+     * - Caches the runner instance.
+     * - Hides the main content of the document body.
+     * - Creates a content wrapper element.
+     * - Creates a content div inside the wrapper.
+     * - Creates a button inside the content div.
+     * - Resizes the object based on the given parameter.
+     * - Binds the `get_keyboard_response` method to the current instance.
+     *
+     * @private
+     */
     Resizer.prototype.osweb_main = function () {
         this.cache_runner();
         document.body.getElementsByTagName('main')[0].style.display = 'none';
@@ -38,6 +67,12 @@ var Resizer = /** @class */ (function () {
         this.resize_object(false);
         this.get_keyboard_response = this.get_keyboard_response.bind(this);
     };
+    /**
+     * Caches the current complete function of the runner and overrides it with a new function.
+     * The new function checks if the `armed` flag is set to true. If it is, it resets the `armed` flag,
+     * restores the original complete function from the cache, and then calls the original complete function.
+     * This method is used to temporarily override the complete function for specific conditions.
+     */
     Resizer.prototype.cache_runner = function () {
         var _this = this;
         this._complete_function_cache = this.runner._events._currentItem._complete; // cache the complete function
@@ -50,6 +85,22 @@ var Resizer = /** @class */ (function () {
             }
         };
     };
+    /**
+     * Creates a content wrapper div element, applies specific styles to it,
+     * and appends it to the document body.
+     *
+     * @returns {HTMLDivElement} The created content wrapper div element.
+     *
+     * The content wrapper is styled with the following properties:
+     * - display: flex
+     * - flex-direction: column
+     * - justify-content: center
+     * - align-items: center
+     * - width: 100%
+     * - margin: auto
+     * - flex: 1 1 100%
+     * - overflow-y: auto
+     */
     Resizer.prototype.create_content_wrapper = function () {
         var content_wrapper = document.createElement('div');
         content_wrapper.id = 'content-wrapper';
@@ -138,6 +189,25 @@ var Resizer = /** @class */ (function () {
             btn.style.bottom = '0';
         }
     };
+    /**
+     * Resizes an object on the page, allowing for dynamic adjustment of its dimensions
+     * through mouse interactions. Optionally displays the calculated DPI (dots per inch)
+     * if the `static_page` parameter is true.
+     *
+     * @param {boolean} static_page - Determines whether to display the DPI information.
+     *
+     * @throws {Error} If the resize element is not found in the DOM.
+     *
+     * @remarks
+     * - The function sets up event listeners for mouse events to handle the resizing logic.
+     * - When the mouse is pressed down on the drag element, resizing starts.
+     * - When the mouse is moved, the width and height of the resize element are adjusted
+     *   based on the mouse movement.
+     * - If `static_page` is true, a DPI text element is created and updated with the
+     *   calculated DPI value during resizing.
+     * - When the resize button is clicked, the resizing task is either ended or a blindspot
+     *   task is started based on the `use_perceived_distance` property.
+     */
     Resizer.prototype.resize_object = function (static_page) {
         var _this = this;
         var _a, _b;
@@ -202,6 +272,13 @@ var Resizer = /** @class */ (function () {
             }
         });
     };
+    /**
+     * Initializes and starts the blind spot task. This function sets up the HTML content
+     * for the task, including instructions and interactive elements. It also adds necessary
+     * event listeners and prepares the visual elements for the task.
+     *
+     * @throws {Error} If the boundary box or SVG element is not found.
+     */
     Resizer.prototype.start_blindspot_task = function () {
         var div = document.querySelector('#boundary_box');
         if (!div) {
@@ -223,6 +300,15 @@ var Resizer = /** @class */ (function () {
         this.ball = ball_div;
         this.reset_ball_wait_for_start();
     };
+    /**
+     * Listens for keyboard responses and triggers a callback function when a valid response is detected.
+     *
+     * @param callback_function - The function to call when a valid response is detected. It receives an object containing the key pressed and the reaction time.
+     * @param valid_responses - An array of valid key responses.
+     * @param persist - If true, the listener will persist after a valid response is detected. Otherwise, it will be removed.
+     * @param allow_held_keys - If true, allows responses from keys that are held down.
+     * @param minimum_rt - The minimum reaction time (in milliseconds) required for a response to be considered valid.
+     */
     Resizer.prototype.get_keyboard_response = function (callback_function, valid_responses, persist, allow_held_keys, minimum_rt) {
         var _this = this;
         var start_time = performance.now();
@@ -244,10 +330,34 @@ var Resizer = /** @class */ (function () {
         };
         this.listeners.push(listener);
     };
+    /**
+     * Initiates the ball animation and sets up a keyboard response listener.
+     *
+     * This method performs the following actions:
+     * 1. Sets up a keyboard response listener that triggers the `record_position` method when the spacebar (' ') is pressed.
+     * 2. Starts the ball animation by calling `requestAnimationFrame` with the `animate_ball` method.
+     *
+     * @returns {void}
+     */
     Resizer.prototype.start_ball = function () {
         this.get_keyboard_response(this.record_position.bind(this), [' '], false, false, 0);
         this.ball_animation_frame_id = requestAnimationFrame(this.animate_ball.bind(this));
     };
+    /**
+     * Records the current position of the ball, updates the remaining repetitions,
+     * and updates the UI to reflect the number of repetitions left. If no repetitions
+     * are left, it finalizes the blindspot task. Otherwise, it resets the ball and
+     * waits for the next start.
+     *
+     * @remarks
+     * - Cancels the current animation frame for the ball.
+     * - Rounds the x-coordinate of the ball's center position to 2 decimal places.
+     * - Pushes the rounded x-coordinate to the blindspot data.
+     * - Decrements the remaining repetitions.
+     * - Updates the text content of the element with id "click" to show the remaining repetitions.
+     * - If repetitions are exhausted, calls `finalize_blindspot_task`.
+     * - Otherwise, calls `reset_ball_wait_for_start` to reset the ball.
+     */
     Resizer.prototype.record_position = function () {
         cancelAnimationFrame(this.ball_animation_frame_id);
         var x = this.accurate_round(this.getElementCenter(this.ball).x, 2);
@@ -261,6 +371,19 @@ var Resizer = /** @class */ (function () {
             this.reset_ball_wait_for_start();
         }
     };
+    /**
+     * Finalizes the blindspot task by calculating the average ball position,
+     * the ball-square distance, the view distance, and the scaling factor.
+     * It also removes root event listeners and ends the resizing task.
+     *
+     * @remarks
+     * - The angle used for the calculation is 13.5 degrees.
+     * - The average ball position is calculated to two decimal places.
+     * - The view distance is calculated using the tangent of the angle.
+     * - The scaling factor is the ratio of the view distance to the development distance.
+     *
+     * @private
+     */
     Resizer.prototype.finalize_blindspot_task = function () {
         var angle = 13.5;
         var sum = this.blindspot_data.ball_pos.reduce(function (a, b) { return a + b; }, 0);
@@ -272,6 +395,25 @@ var Resizer = /** @class */ (function () {
         this.remove_root_event_listeners();
         this.end_resizing_task();
     };
+    /**
+     * Ends the resizing task by adjusting the dimensions of the canvas element
+     * and updating the display properties of certain elements on the page.
+     *
+     * @throws {Error} If the div with id 'content' or the canvas element is not found.
+     *
+     * @remarks
+     * - If `scaling_factor` is undefined, the new dimensions are calculated based on
+     *   the device's pixel ratio and the canvas width in millimeters.
+     * - Otherwise, the new dimensions are calculated using the `scaling_factor` and
+     *   the experiment's width and height variables.
+     * - Ensures the new dimensions do not exceed the available screen dimensions.
+     * - Updates the canvas element's width and height styles.
+     * - Sets the display style of the main element to 'flex'.
+     * - Marks the task as armed and completes the current item in the runner's event queue.
+     *
+     * @privateRemarks
+     * - The `_complete_function_cache` line is commented out and may be used for future reference.
+     */
     Resizer.prototype.end_resizing_task = function () {
         var div = document.querySelector('#content');
         if (!div) {
@@ -306,6 +448,17 @@ var Resizer = /** @class */ (function () {
         this.armed = true;
         this.runner._events._currentItem._complete();
     };
+    /**
+     * Resets the ball position and waits for the start signal.
+     *
+     * This method calculates the position of the ball and a virtual chinrest square
+     * within a container element. It then sets the ball's position and the square's
+     * position accordingly. The position of the square is stored in the `blindspot_data`
+     * object. Finally, it sets up a keyboard response listener to start the ball movement
+     * when the spacebar is pressed.
+     *
+     * @throws {Error} If the virtual chinrest square element is not found.
+     */
     Resizer.prototype.reset_ball_wait_for_start = function () {
         var rectX = this.container.getBoundingClientRect().width - 30;
         var ballX = rectX * 0.85; // define where the ball is
