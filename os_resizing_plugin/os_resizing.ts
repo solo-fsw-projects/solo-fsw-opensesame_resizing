@@ -1,3 +1,10 @@
+/**
+ * Resizer class for the OpenSesame web plugin.
+ * 
+ * This class is responsible for managing the resizing task and the blindspot task.
+ * It provides methods to resize an object on the page and to perform a blindspot task
+ * to calculate the view distance and scaling factor.
+ */
 class Resizer {
     private init_height: number = 53.98;
     private init_width: number = 85.6;
