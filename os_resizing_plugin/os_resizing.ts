@@ -15,7 +15,7 @@ class Resizer {
         square_pos: 0,
     };
     private development_distance: number;
-    private development_dpi: number;
+    private canvas_width_in_mm: number;
     private use_perceived_distance: boolean;
     private armed: boolean = false;
     aspect_ratio: number;
@@ -24,25 +24,15 @@ class Resizer {
     runner: any; // TODO: add variables to runner vars
     view_distance: number;
     scaling_factor: number;
+    squeeze: number = 0;
 
-    constructor(osweb: boolean, runner: any, use_perceived_distance: boolean, development_dpi: number, development_distance: number) {
-        if (!osweb) {
-            this.static_page_main();
-            return;
-        }
-
-        this.development_dpi = development_dpi;
+    constructor(runner: any, use_perceived_distance: boolean, canvas_width_in_mm: number, development_distance: number) {
+        this.canvas_width_in_mm = canvas_width_in_mm;
         this.development_distance = development_distance;
         this.use_perceived_distance = use_perceived_distance;
         this.runner = runner;
         this.osweb_main();
         this.runner._events._currentItem._complete();
-    }
-
-    private static_page_main() {
-        const content_wrapper = this.create_content_wrapper();
-        this.content_div(content_wrapper);
-        this.resize_object(true);
     }
 
     private osweb_main() {
@@ -382,7 +372,7 @@ class Resizer {
         if (this.scaling_factor == undefined) {
             const device_pixel_ratio = window.devicePixelRatio || 1;
             
-            const pixel_width = Math.round(200 * this.calculated_dpi / 25.4);
+            const pixel_width = Math.round(this.canvas_width_in_mm * this.calculated_dpi / 25.4);
 
             new_width = pixel_width;
             new_height = (pixel_width / canvas_aspect_ratio);
@@ -393,7 +383,7 @@ class Resizer {
         }
         // this.runner._events._currentItem._complete = this._complete_function_cache;
         
-        let squeeze = new_width / screen.availWidth;
+        this.squeeze = new_width / screen.availWidth;
         
         if (new_height > screen.availHeight || new_width > screen.availWidth) {
             new_height = screen.availHeight;

@@ -40,10 +40,9 @@ Once imported, a `inline_javascript` block needs to be created. The current reco
 ### Initialization
 You can then initialize the `Resizer` object. Most of the functionality is automatic, so really only initialization is needed. To initialize the object, in the run tab of the inline script add the following:
 ```
-var resizer = new Resizer(*osweb, runner, *use_perceived_distance, *canvas_width_in_mm, *distance_to_screen)
+var resizer = new Resizer(runner, *use_perceived_distance, *canvas_width_in_mm, *distance_to_screen)
 ```
 The variables with `*` need to be altered to their respective types. The runner variable is already built into OpenSesame and thus does not need a different value. This is the outline of the variables needed by the constructor:
-- osweb: Boolean (true/false). Determines if the class is used within OSWeb
 - runner: OSWeb runner that contains the entire experiment
 - use_perceived_distance: Boolean. Determines wether or not the true size or the perceived size needs to match on the participants screen (or: wether or not the blindspot task is done to calculate the distance to the screen)
 - canvas_width_in_mm: Number. The size you need the experiment display width to be in millimeters.
@@ -65,9 +64,9 @@ Like described in [Current Hiccups](#current-hiccups), when implementing the res
 When using the perceived size make sure there is a sketchpad item with the '*keypress*' duration after the inline javascript block that can be skipped (it can be empty).
 Doing this will ensure no important parts of the experiment are missed. If you decide to use the true size (*use_perceived_distance* set to false), this is not needed as the program will simply start the next block in the experiment.
 
-It's important to ensure that the resolution you set for the experiment also needs to be smaller than the resolution of the screen you are developing on (for example: if you are using a 1920x1080 screen, design the experiment using 1800x1012, which has the same aspect ratio but is smaller). Also make sure your screen's scaling is set to 100% (on windows pc's, under display settings), as this messes with the DPI scaling and can lead to inaccurate results on smaller screens as the pixel sizes no longer match. This is a feature that might be added in the future but for now requires more research.
+It's important to ensure that the resolution you set for the experiment also needs to be smaller than the resolution of the screen you are developing on. You can mess around with different settings, but it is recommended to not use a size bigger than 29cm, as this will likely not fit properly on a 13.3 inch screen. To make development easier we recommend to use the resizer class during development to scale the images etc to be the desired size.
 
-If the experiment gets too large for the screen it's being displayed on, it shall resize itself to match with the biggest supported size possible. This can be seen in the results as well, using the `resizer.squeeze` variable.
+If the experiment gets too large for the screen it's being displayed on, it shall resize itself to match with the biggest supported size possible. This can be seen in the results as well, using the `resizer.squeeze` variable, which represents the squeeze factor (this should be higher than 1 if there is no squeeze).
 
 #### Current Hiccups
 As of right now, the functionality is all in place. There is however a slight issue when you do decide to use the perceived distance functionality. This makes the program skip over the next item in the OpenSesame experiment, rather than moving to that item. We are currently working hard on diagnosing what's causing this and fixing it.
@@ -79,6 +78,7 @@ The `Resizer` class saves a few variables as well. These variables can be used i
 - calculated_dpi: The calculated DPI of the screen.
 - px2mm: The pixels to millimeter ratio, which can be used to convert between the two sizes.
 - runner: The OSWeb runner.
+- squeeze: the squeeze factor (if the resizing made the canvas bigger than the screen.)
 
 These variables can be accessed by typing in the object name (in our case `resizer` see [Initialization](#initialization)), and adding the variable name with a `.` between them like so:
 ```

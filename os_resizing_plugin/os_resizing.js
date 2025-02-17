@@ -8,7 +8,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 var Resizer = /** @class */ (function () {
-    function Resizer(osweb, runner, use_perceived_distance, development_dpi, development_distance) {
+    function Resizer(runner, use_perceived_distance, canvas_width_in_mm, development_distance) {
         this.init_height = 53.98;
         this.init_width = 85.6;
         this.init_resize_element = 250;
@@ -21,22 +21,14 @@ var Resizer = /** @class */ (function () {
             square_pos: 0,
         };
         this.armed = false;
-        if (!osweb) {
-            this.static_page_main();
-            return;
-        }
-        this.development_dpi = development_dpi;
+        this.squeeze = 0;
+        this.canvas_width_in_mm = canvas_width_in_mm;
         this.development_distance = development_distance;
         this.use_perceived_distance = use_perceived_distance;
         this.runner = runner;
         this.osweb_main();
         this.runner._events._currentItem._complete();
     }
-    Resizer.prototype.static_page_main = function () {
-        var content_wrapper = this.create_content_wrapper();
-        this.content_div(content_wrapper);
-        this.resize_object(true);
-    };
     Resizer.prototype.osweb_main = function () {
         this.cache_runner();
         document.body.getElementsByTagName('main')[0].style.display = 'none';
@@ -290,11 +282,11 @@ var Resizer = /** @class */ (function () {
         if (!canvas) {
             throw new Error('Canvas not found');
         }
+        var canvas_aspect_ratio = canvas.width / canvas.height;
         var new_width, new_height;
         if (this.scaling_factor == undefined) {
-            var canvas_aspect_ratio = canvas.width / canvas.height;
             var device_pixel_ratio = window.devicePixelRatio || 1;
-            var pixel_width = Math.round(200 * this.calculated_dpi / 25.4);
+            var pixel_width = Math.round(this.canvas_width_in_mm * this.calculated_dpi / 25.4);
             new_width = pixel_width;
             new_height = (pixel_width / canvas_aspect_ratio);
         }
@@ -303,10 +295,10 @@ var Resizer = /** @class */ (function () {
             new_height = Math.round(this.runner._experiment.vars.get('height') * this.scaling_factor);
         }
         // this.runner._events._currentItem._complete = this._complete_function_cache;
-        var squeeze = new_width / screen.availWidth;
+        this.squeeze = new_width / screen.availWidth;
         if (new_height > screen.availHeight || new_width > screen.availWidth) {
             new_height = screen.availHeight;
-            new_width = new_height * this.aspect_ratio;
+            new_width = new_height * canvas_aspect_ratio;
         }
         canvas.style.width = "".concat(new_width, "px");
         canvas.style.height = "".concat(new_height, "px");
