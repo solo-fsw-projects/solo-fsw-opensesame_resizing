@@ -12,7 +12,8 @@ This repository contains the source code (*os_resizing.ts*) for the *os_resizing
     3. [Designing the experiment](#designing-the-experiment)
     4. [Hiccups](#current-hiccups)
     5. [Variables](#variables)
-5. [References](#references)
+5. [Example](#example)
+6. [References](#references)
 
 ## Definitions
 - Visual angle: The angle a viewed object subtends at the eye. Also referred to as an objects angular size.
