@@ -81,11 +81,16 @@ class Resizer {
      * This method is used to temporarily override the complete function for specific conditions.
      */
     private cache_runner() {
+        debugger;
         this._complete_function_cache = this.runner._events._currentItem._complete; // cache the complete function
         this.runner._events._currentItem._complete = () => { 
             if (this.armed) {
                 this.armed = false;
-                debugger;
+                this.runner._experiment.vars.set('squeeze', this.squeeze);
+                this.runner._experiment.vars.set('view_distance', this.view_distance);
+                this.runner._experiment.vars.set('scaling_factor', this.scaling_factor);
+                this.runner._experiment.vars.set('calculated_dpi', this.calculated_dpi);
+                this.runner._experiment.vars.set('px2mm', this.px2mm);
                 this.runner._events._currentItem._complete = this._complete_function_cache;
                 this.runner._events._currentItem._complete();
             }
@@ -512,23 +517,22 @@ class Resizer {
         
         let new_width, new_height;
         if (this.scaling_factor == undefined) {
-            const device_pixel_ratio = window.devicePixelRatio || 1;
-            
             const pixel_width = Math.round(this.canvas_width_in_mm * this.calculated_dpi / 25.4);
 
             new_width = pixel_width;
             new_height = (pixel_width / canvas_aspect_ratio);
+            this.scaling_factor = canvas.width / new_width;
         }
         else {
             new_width = Math.round(this.runner._experiment.vars.get('width') * this.scaling_factor); 
             new_height = Math.round(this.runner._experiment.vars.get('height') * this.scaling_factor);
         }
-        // this.runner._events._currentItem._complete = this._complete_function_cache;
+        // this .runner._events._currentItem._complete = this._complete_function_cache;
         
-        this.squeeze = new_width / screen.availWidth;
+        this.squeeze = new_width / window.screen.availWidth;
         
-        if (new_height > screen.availHeight || new_width > screen.availWidth) {
-            new_height = screen.availHeight;
+        if (new_height > window.screen.availHeight || new_width > window.screen.availWidth) {
+            new_height = window.screen.availHeight;
             new_width = new_height * canvas_aspect_ratio;
         }
         canvas.style.width = `${new_width}px`;
