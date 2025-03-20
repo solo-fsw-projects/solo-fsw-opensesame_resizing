@@ -24,7 +24,6 @@ class Resizer {
     private development_distance: number;
     private canvas_width_in_mm: number;
     private use_perceived_distance: boolean;
-    private armed: boolean = false;
     aspect_ratio: number;
     px2mm: number;
     calculated_dpi: number;
@@ -32,6 +31,7 @@ class Resizer {
     view_distance: number;
     scaling_factor: number;
     squeeze: number = 0;
+    complete: boolean = false;
 
     /**
      * Constructs an instance of the class.
@@ -47,7 +47,6 @@ class Resizer {
         this.use_perceived_distance = use_perceived_distance;
         this.runner = runner;
         this.osweb_main();
-        this.runner._events._currentItem._complete();
     }
 
     /**
@@ -65,36 +64,12 @@ class Resizer {
      * @private
      */
     private osweb_main() {
-        this.cache_runner();
         document.body.getElementsByTagName('main')[0].style.display = 'none';
         const content_wrapper = this.create_content_wrapper();
         let box = this.content_div(content_wrapper);
         this.create_btn(box);
         this.resize_object(false);
         this.get_keyboard_response = this.get_keyboard_response.bind(this);
-    }
-
-    /**
-     * Caches the current complete function of the runner and overrides it with a new function.
-     * The new function checks if the `armed` flag is set to true. If it is, it resets the `armed` flag,
-     * restores the original complete function from the cache, and then calls the original complete function.
-     * This method is used to temporarily override the complete function for specific conditions.
-     */
-    private cache_runner() {
-        debugger;
-        this._complete_function_cache = this.runner._events._currentItem._complete; // cache the complete function
-        this.runner._events._currentItem._complete = () => { 
-            if (this.armed) {
-                this.armed = false;
-                this.runner._experiment.vars.set('squeeze', this.squeeze);
-                this.runner._experiment.vars.set('view_distance', this.view_distance);
-                this.runner._experiment.vars.set('scaling_factor', this.scaling_factor);
-                this.runner._experiment.vars.set('calculated_dpi', this.calculated_dpi);
-                this.runner._experiment.vars.set('px2mm', this.px2mm);
-                this.runner._events._currentItem._complete = this._complete_function_cache;
-                this.runner._events._currentItem._complete();
-            }
-        };
     }
 
     /**
@@ -538,8 +513,12 @@ class Resizer {
         canvas.style.width = `${new_width}px`;
         canvas.style.height = `${new_height}px`;
         document.body.getElementsByTagName('main')[0].style.display = 'flex';
-        this.armed = true;
-        this.runner._events._currentItem._complete();
+        this.runner._experiment.vars.set('squeeze', this.squeeze);
+        this.runner._experiment.vars.set('view_distance', this.view_distance);
+        this.runner._experiment.vars.set('scaling_factor', this.scaling_factor);
+        this.runner._experiment.vars.set('calculated_dpi', this.calculated_dpi);
+        this.runner._experiment.vars.set('px2mm', this.px2mm);
+        this.complete = true;
     }
 
     /**
