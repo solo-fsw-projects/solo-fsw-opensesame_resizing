@@ -6,6 +6,8 @@ This repository contains the source code (*os_resizing.ts*) for the *os_resizing
 1. [Introduction](#resizing-script-for-osweb)
 2. [Definitions](#definitions)
 3. [Importing](#importing)
+    1. [For testing](#for-testing)
+    2. [For actual experiments](#for-use-in-actual-experiments)
 4. [How to use](#howto)
     1. [Initialization](#initialization)
     2. [Determining Distance to screen during development](#determining-distance-to-screen-during-development)
