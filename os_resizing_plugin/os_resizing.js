@@ -35,14 +35,13 @@ var Resizer = /** @class */ (function () {
             avg_ball_pos: 0,
             square_pos: 0,
         };
-        this.armed = false;
         this.squeeze = 0;
+        this.complete = false;
         this.canvas_width_in_mm = canvas_width_in_mm;
         this.development_distance = development_distance;
         this.use_perceived_distance = use_perceived_distance;
         this.runner = runner;
         this.osweb_main();
-        this.runner._events._currentItem._complete();
     }
     /**
      * Main function to initialize and manage the OpenSesame web plugin.
@@ -59,36 +58,12 @@ var Resizer = /** @class */ (function () {
      * @private
      */
     Resizer.prototype.osweb_main = function () {
-        this.cache_runner();
         document.body.getElementsByTagName('main')[0].style.display = 'none';
         var content_wrapper = this.create_content_wrapper();
         var box = this.content_div(content_wrapper);
         this.create_btn(box);
         this.resize_object(false);
         this.get_keyboard_response = this.get_keyboard_response.bind(this);
-    };
-    /**
-     * Caches the current complete function of the runner and overrides it with a new function.
-     * The new function checks if the `armed` flag is set to true. If it is, it resets the `armed` flag,
-     * restores the original complete function from the cache, and then calls the original complete function.
-     * This method is used to temporarily override the complete function for specific conditions.
-     */
-    Resizer.prototype.cache_runner = function () {
-        var _this = this;
-        debugger;
-        this._complete_function_cache = this.runner._events._currentItem._complete; // cache the complete function
-        this.runner._events._currentItem._complete = function () {
-            if (_this.armed) {
-                _this.armed = false;
-                _this.runner._experiment.vars.set('squeeze', _this.squeeze);
-                _this.runner._experiment.vars.set('view_distance', _this.view_distance);
-                _this.runner._experiment.vars.set('scaling_factor', _this.scaling_factor);
-                _this.runner._experiment.vars.set('calculated_dpi', _this.calculated_dpi);
-                _this.runner._experiment.vars.set('px2mm', _this.px2mm);
-                _this.runner._events._currentItem._complete = _this._complete_function_cache;
-                _this.runner._events._currentItem._complete();
-            }
-        };
     };
     /**
      * Creates a content wrapper div element, applies specific styles to it,
@@ -450,8 +425,12 @@ var Resizer = /** @class */ (function () {
         canvas.style.width = "".concat(new_width, "px");
         canvas.style.height = "".concat(new_height, "px");
         document.body.getElementsByTagName('main')[0].style.display = 'flex';
-        this.armed = true;
-        this.runner._events._currentItem._complete();
+        this.runner._experiment.vars.set('squeeze', this.squeeze);
+        this.runner._experiment.vars.set('view_distance', this.view_distance);
+        this.runner._experiment.vars.set('scaling_factor', this.scaling_factor);
+        this.runner._experiment.vars.set('calculated_dpi', this.calculated_dpi);
+        this.runner._experiment.vars.set('px2mm', this.px2mm);
+        this.complete = true;
     };
     /**
      * Resets the ball position and waits for the start signal.
