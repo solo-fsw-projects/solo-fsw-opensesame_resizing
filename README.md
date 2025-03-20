@@ -22,6 +22,7 @@ This repository contains the source code (*os_resizing.ts*) for the *os_resizing
 - DPI: A measure of dot density, the number of individual dots that can be placed in a line of one inch. It is used to bridge the gap between pixels and real world millimetres.
 
 ## Importing
+### For testing
 This package is supposed to be imported into OpenSesame directly, through the `OSWeb & JATOS control panel` (This currently only seems to function on MacOS). Under external libraries add the following:
 ```
 https://solo-fsw-projects.github.io/solo-fsw-opensesame_resizing/os_resizing_plugin/os_resizing.js
@@ -33,6 +34,15 @@ script.src = "https://solo-fsw-projects.github.io/solo-fsw-opensesame_resizing/o
 document.head.appendChild(script);
 ```
 This will allow you to use the classes and functions in the *os_resizing.js* file directly in the inline javascript blocks in OpenSesame.
+
+### For use in actual experiments
+Clone the repository to your device. Start your local jatos server and go about creating your experiment. Make sure to place the 'os_resizer.js' file in the same folder you place your experiment HTML in. This does mean that you need to create the experiment manually in jatos and export the opensesame experiment to HTML rather than a .jzip. In the opensesame experiment add a new `inline_javascript` block with the following:
+```
+var script = document.createElement('script');
+script.src = "./os_resizing.js";
+document.head.appendChild(script);
+```
+Simply upload the files into the root asset folder of your study and run it in jatos. The reason you want to do this is to ensure that future changes (which update the version on github pages, a.k.a. the link you are using for testing) don't break your experiment.
 
 ## How to use <a name="howto"></a>
 Once imported, a `inline_javascript` block needs to be created. The current recommendation is to have a sketchpad or some other object before the inline script, as this will allow OSWeb to load the script, depending on how it was imported.
