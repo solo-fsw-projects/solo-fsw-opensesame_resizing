@@ -119,7 +119,7 @@ class Resizer {
         boundary_box.style.margin = '0 auto';
 
         const instructions = document.createElement('p');
-        instructions.textContent = 'Please hold a credit card up to the screen and resize the box below to match the size of the credit card. This will help us calculate the accurate DPI for your display.';
+        instructions.textContent = 'Please hold a credit card up to the screen and resize the box below to match the size of the credit card. This will help us calculate the accurate DPI for your display. \n Click on the bottom right corner of the box and drag to resize it.';
         instructions.style.marginBottom = '20px';
         content_wrapper.appendChild(instructions);
 
