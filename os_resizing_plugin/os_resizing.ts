@@ -14,7 +14,6 @@ class Resizer {
     private ball_animation_frame_id: number;
     private listeners: KeyboardListener[] = [];
     private held_keys: Set<string> = new Set();
-    private _complete_function_cache: any;
     private reps_remaining: number = 5;
     private blindspot_data = {
         ball_pos: [] as number[],
@@ -215,7 +214,7 @@ class Resizer {
      */
     resize_object(static_page: boolean) {
         let dragging = false;
-        const resize_element = document.querySelector<HTMLElement>('#resize_element');
+        var resize_element = document.querySelector<HTMLElement>('#resize_element');
         if (!resize_element) {
             throw new Error('Resize element not found');
         };
@@ -254,8 +253,10 @@ class Resizer {
             let dx = e.pageX - origin_x;
             let new_width = original_width + dx;
             let new_height = Math.round(new_width / this.aspect_ratio);
-            resize_element.style.width = new_width + 'px';
-            resize_element.style.height = new_height + 'px';
+            if (resize_element) {
+                resize_element.style.width = new_width + 'px';
+                resize_element.style.height = new_height + 'px';
+            }
 
             if (static_page) {
                 let calculated_dpi_width = new_width / this.init_width / 0.03937;
@@ -268,6 +269,9 @@ class Resizer {
 
         document.querySelector('#resize_btn')?.addEventListener('click', (e) => {
             e.preventDefault();
+            if (!resize_element) {
+                throw new Error('Resize element is null');
+            }
             let element_width = resize_element.getBoundingClientRect().width;
             this.px2mm = element_width / this.init_width;
             this.calculated_dpi = this.px2mm / 0.03937;
@@ -278,7 +282,6 @@ class Resizer {
             }
 
             if (this.use_perceived_distance) {
-                debugger;
                 this.start_blindspot_task();
             } else {
                 this.end_resizing_task();
