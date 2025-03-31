@@ -167,7 +167,7 @@ class Resizer {
             drag_element.style.right = '0';
             drag_element.style.width = adjust_size + 'px';
             drag_element.style.height = adjust_size + 'px';
-            drag_element.style.border = '1px solid red';
+            drag_element.style.border = '3px solid red';
             drag_element.style.backgroundColor = 'none';
             drag_element.style.borderLeft = '0';
             drag_element.style.borderTop = '0';
@@ -183,7 +183,7 @@ class Resizer {
         boundary_box.appendChild(btn);
 
         function add_style() {
-            btn.textContent = 'Resize';
+            btn.textContent = 'Finish';
             btn.style.display = 'inline-block';
             btn.style.margin = '0.75em';
             btn.style.textAlign = 'center';
@@ -219,13 +219,17 @@ class Resizer {
             throw new Error('Resize element not found');
         };
 
-        const original_width = parseInt(resize_element.style.width);
+        let original_width = parseInt(resize_element.style.width);
         let origin_x;
         let dpi_text;
         let calculated_dpi = 0;
 
         document.addEventListener('mouseup', () => {
             dragging = false;
+            if (resize_element) {
+                let element_width = resize_element.getBoundingClientRect().width;
+                original_width = element_width;
+            }
         })
 
         function mouse_down_event(e) {

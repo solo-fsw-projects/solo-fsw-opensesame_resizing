@@ -147,7 +147,7 @@ var Resizer = /** @class */ (function () {
             drag_element.style.right = '0';
             drag_element.style.width = adjust_size + 'px';
             drag_element.style.height = adjust_size + 'px';
-            drag_element.style.border = '1px solid red';
+            drag_element.style.border = '3px solid red';
             drag_element.style.backgroundColor = 'none';
             drag_element.style.borderLeft = '0';
             drag_element.style.borderTop = '0';
@@ -160,7 +160,7 @@ var Resizer = /** @class */ (function () {
         add_style();
         boundary_box.appendChild(btn);
         function add_style() {
-            btn.textContent = 'Resize';
+            btn.textContent = 'Finish';
             btn.style.display = 'inline-block';
             btn.style.margin = '0.75em';
             btn.style.textAlign = 'center';
@@ -203,6 +203,10 @@ var Resizer = /** @class */ (function () {
         var calculated_dpi = 0;
         document.addEventListener('mouseup', function () {
             dragging = false;
+            if (resize_element) {
+                var element_width = resize_element.getBoundingClientRect().width;
+                original_width = element_width;
+            }
         });
         function mouse_down_event(e) {
             e.preventDefault();
@@ -225,8 +229,10 @@ var Resizer = /** @class */ (function () {
             var dx = e.pageX - origin_x;
             var new_width = original_width + dx;
             var new_height = Math.round(new_width / _this.aspect_ratio);
-            resize_element.style.width = new_width + 'px';
-            resize_element.style.height = new_height + 'px';
+            if (resize_element) {
+                resize_element.style.width = new_width + 'px';
+                resize_element.style.height = new_height + 'px';
+            }
             if (static_page) {
                 var calculated_dpi_width = new_width / _this.init_width / 0.03937;
                 var calculated_dpi_height = new_height / _this.init_height / 0.03937;
@@ -236,6 +242,9 @@ var Resizer = /** @class */ (function () {
         });
         (_b = document.querySelector('#resize_btn')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', function (e) {
             e.preventDefault();
+            if (!resize_element) {
+                throw new Error('Resize element is null');
+            }
             var element_width = resize_element.getBoundingClientRect().width;
             _this.px2mm = element_width / _this.init_width;
             _this.calculated_dpi = _this.px2mm / 0.03937;
@@ -244,7 +253,6 @@ var Resizer = /** @class */ (function () {
                 instructions.remove();
             }
             if (_this.use_perceived_distance) {
-                debugger;
                 _this.start_blindspot_task();
             }
             else {
